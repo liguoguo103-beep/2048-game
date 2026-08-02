@@ -181,7 +181,7 @@
 </head>
 <body class="min-h-screen bg-amber-50/60 flex flex-col justify-between p-3 sm:p-5 select-none">
 
-    <!-- 全局頂部導覽列 (大氣寬闊設計) -->
+    <!-- 全局頂部導覽列 -->
     <header class="w-full max-w-7xl mx-auto bg-gradient-to-r from-amber-900 via-amber-800 to-amber-950 text-white rounded-3xl px-5 py-3.5 shadow-lg mb-4 flex flex-wrap justify-between items-center gap-4 border border-amber-700/60">
         <div class="flex items-center gap-4">
             <button id="nav-home-btn" class="btn-action flex items-center gap-3 hover:opacity-90">
@@ -191,11 +191,14 @@
                 </span>
             </button>
 
-            <div id="room-badge" class="hidden items-center bg-amber-950/80 border-2 border-amber-500/80 px-4 py-1.5 rounded-2xl text-xs sm:text-sm shadow-inner">
-                <span class="text-amber-300 font-bold mr-2">房間號:</span>
-                <span id="room-code-display" class="font-extrabold tracking-widest text-white text-base mr-3">-----</span>
+            <div id="room-badge" class="hidden items-center bg-amber-950/80 border-2 border-amber-500/80 px-4 py-1.5 rounded-2xl text-xs sm:text-sm shadow-inner gap-2">
+                <span class="text-amber-300 font-bold">房間號:</span>
+                <span id="room-code-display" class="font-extrabold tracking-widest text-white text-base">-----</span>
                 <button id="open-share-modal-btn" class="btn-action bg-amber-600 hover:bg-amber-500 text-white font-extrabold px-3 py-1 rounded-xl text-xs flex items-center gap-1.5 shadow">
                     <i class="fas fa-share-alt"></i> 分享房間
+                </button>
+                <button id="leave-room-btn" class="btn-action bg-rose-700 hover:bg-rose-600 text-white font-extrabold px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 shadow" title="離開房間">
+                    <i class="fas fa-door-open"></i> 離開房間
                 </button>
             </div>
         </div>
@@ -218,7 +221,7 @@
         </div>
     </header>
 
-    <!-- ==================== View 1: 遊戲大廳主頁 Portal ==================== -->
+    <!-- ==================== View 1: 遊戲大廳主頁 Portal (/2048-game/home) ==================== -->
     <main id="portal-view" class="w-full max-w-7xl mx-auto flex-1 flex flex-col justify-center items-center gap-8 py-6">
         <!-- 歡迎視覺面板 -->
         <div class="w-full bg-gradient-to-r from-amber-800 via-amber-900 to-amber-950 text-white rounded-3xl p-8 sm:p-10 shadow-2xl border-2 border-amber-600 flex flex-col md:flex-row justify-between items-center gap-8">
@@ -911,6 +914,24 @@
             showPortalView() {
                 if (document.getElementById('portal-view')) document.getElementById('portal-view').classList.remove('hidden');
                 if (document.getElementById('game-view')) document.getElementById('game-view').classList.add('hidden');
+                
+                // 依據用戶要求，大廳主頁 URL 設為 .../2048-game/home
+                this.roomId = null;
+                this.isHost = false;
+                localStorage.removeItem('2048_active_room');
+
+                let targetPath = window.location.pathname;
+                if (!targetPath.endsWith('/home')) {
+                    targetPath = targetPath.replace(/\/$/, '') + '/home';
+                }
+
+                if (window.history.replaceState) {
+                    window.history.replaceState(null, '', targetPath);
+                }
+                const roomBadge = document.getElementById('room-badge');
+                if (roomBadge) roomBadge.classList.add('hidden');
+
+                if (this.peer) try { this.peer.destroy(); } catch(e){}
                 this.updateAuthUI();
             }
 
@@ -930,7 +951,8 @@
             openShareModal() {
                 if (!this.roomId) return;
                 const shareModal = document.getElementById('share-modal');
-                const shareUrl = `${window.location.origin}${window.location.pathname}?room=${this.roomId}`;
+                const baseUrl = `${window.location.origin}${window.location.pathname.replace(/\/home$/, '')}`;
+                const shareUrl = `${baseUrl}?room=${this.roomId}`;
                 
                 if (document.getElementById('share-modal-room-code')) document.getElementById('share-modal-room-code').textContent = this.roomId;
                 if (document.getElementById('share-url-input')) document.getElementById('share-url-input').value = shareUrl;
@@ -984,16 +1006,27 @@
 
             initP2P() {
                 const urlParams = new URLSearchParams(window.location.search);
-                const roomFromUrl = urlParams.get('room');
-                if (roomFromUrl) {
+                const roomFromUrl = urlParams.get('room') || localStorage.getItem('2048_active_room');
+                const isHomePath = window.location.pathname.endsWith('/home');
+
+                if (roomFromUrl && !isHomePath) {
                     this.showGameView();
                     this.autoConnectRoom(roomFromUrl.toUpperCase());
+                } else {
+                    this.showPortalView();
+                }
+            }
+
+            syncRoomToStorageAndUrl(code) {
+                localStorage.setItem('2048_active_room', code);
+                const baseUrl = window.location.pathname.replace(/\/home$/, '');
+                if (window.history.replaceState) {
+                    window.history.replaceState(null, '', `${baseUrl}?room=${code}`);
                 }
             }
 
             autoConnectRoom(code) {
                 this.closeRoomModal();
-                // 每次進房前完全清空歷史舊房間的灰塵紀錄，防止同名殘留！
                 this.roomPlayers = {};
                 this.connections = {};
                 this.spectateTargetId = null;
@@ -1005,6 +1038,7 @@
                 if (document.getElementById('player-self-name')) document.getElementById('player-self-name').textContent = this.playerName;
 
                 this.roomId = code;
+                this.syncRoomToStorageAndUrl(code);
                 this.myPeerId = `2048-peer-${Math.random().toString(36).substring(2, 8)}`;
 
                 if (typeof Peer !== 'undefined') {
@@ -1032,8 +1066,7 @@
                         this.peer.on('error', (err) => {
                             console.warn('AutoConnect Peer Error:', err);
                             if (!connected) {
-                                alert(`無法連線至房間【${code}】！\n請確認房間號是否正確，或 Host 玩家是否在線。`);
-                                this.showPortalView();
+                                this.createRoom(code, true);
                             }
                         });
                     } catch(e) {
@@ -1046,7 +1079,6 @@
 
             createRoom(customCode, silent = false) {
                 this.closeRoomModal();
-                // 每次建房前完全清空歷史舊房間的灰塵紀錄，100% 杜絕同名重複登記！
                 this.roomPlayers = {};
                 this.connections = {};
                 this.spectateTargetId = null;
@@ -1059,6 +1091,7 @@
 
                 const code = customCode || Math.random().toString(36).substring(2, 8).toUpperCase();
                 this.roomId = code;
+                this.syncRoomToStorageAndUrl(code);
                 this.isHost = true;
                 this.myPeerId = `2048-room-${code}`;
 
@@ -1779,6 +1812,13 @@
 
                 const navHomeBtn = document.getElementById('nav-home-btn');
                 if (navHomeBtn) navHomeBtn.addEventListener('click', () => this.showPortalView());
+
+                const leaveRoomBtn = document.getElementById('leave-room-btn');
+                if (leaveRoomBtn) leaveRoomBtn.addEventListener('click', () => {
+                    if (confirm('確定要離開目前對戰房間嗎？')) {
+                        this.showPortalView();
+                    }
+                });
 
                 const portalCreateRoomBtn = document.getElementById('portal-create-room-btn');
                 if (portalCreateRoomBtn) {
