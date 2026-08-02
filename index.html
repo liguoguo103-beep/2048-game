@@ -722,7 +722,7 @@
                 this.roomPlayers = {};
                 this.heartbeatTimer = null;
 
-                // 隨機強大自動命名系統 (優先使用 Google 暱稱)
+                // 隨機強大自動命名系統
                 this.playerName = this.currentUser ? this.currentUser.name : (localStorage.getItem('2048_player_name') || this.generateSmartName());
 
                 this.gridBg = document.getElementById('grid-background');
@@ -766,7 +766,6 @@
                 if (portalGoogleBtn) portalGoogleBtn.addEventListener('click', openGoogleModal);
                 if (closeGoogleModalBtn) closeGoogleModalBtn.addEventListener('click', closeGoogleModal);
 
-                // 點擊 Modal 背景也可即時關閉彈窗
                 googleModal.addEventListener('click', (e) => {
                     if (e.target === googleModal) closeGoogleModal();
                 });
@@ -896,10 +895,8 @@
                 if (roomFromUrl) {
                     this.showGameView();
                     this.autoConnectRoom(roomFromUrl.toUpperCase());
-                } else {
-                    // 後台默默靜默連結，不鎖死介面
-                    this.createRoom(Math.random().toString(36).substring(2, 8).toUpperCase(), true);
                 }
+                // 網頁開啟時不主動調用 createRoom 防止 Peer 錯誤迴圈卡死！
             }
 
             autoConnectRoom(code) {
@@ -913,39 +910,36 @@
                 this.myPeerId = `2048-peer-${Math.random().toString(36).substring(2, 8)}`;
 
                 if (typeof Peer !== 'undefined') {
-                    if (this.peer) try { this.peer.destroy(); } catch(e){}
-                    this.peer = new Peer(this.myPeerId, PEER_CONFIG);
+                    try {
+                        if (this.peer) try { this.peer.destroy(); } catch(e){}
+                        this.peer = new Peer(this.myPeerId, PEER_CONFIG);
 
-                    this.peer.on('open', () => {
-                        const hostPeerId = `2048-room-${this.roomId}`;
-                        const conn = this.peer.connect(hostPeerId, { reliable: true });
+                        this.peer.on('open', () => {
+                            const hostPeerId = `2048-room-${this.roomId}`;
+                            const conn = this.peer.connect(hostPeerId, { reliable: true });
 
-                        let connected = false;
-                        conn.on('open', () => {
-                            connected = true;
-                            this.connections[hostPeerId] = conn;
-                            conn.send({ type: 'JOIN', name: this.playerName, playerData: this.getSelfPlayerState() });
-                            this.updateRoomStateDisplay();
+                            conn.on('open', () => {
+                                this.connections[hostPeerId] = conn;
+                                conn.send({ type: 'JOIN', name: this.playerName, playerData: this.getSelfPlayerState() });
+                                this.updateRoomStateDisplay();
+                            });
+
+                            this.handlePeerConnection(conn);
                         });
 
-                        this.handlePeerConnection(conn);
-
-                        setTimeout(() => {
-                            if (!connected && Object.keys(this.connections).length === 0) {
-                                try { this.peer.destroy(); } catch(e){}
-                                this.createRoom(code, false);
-                            }
-                        }, 1500);
-                    });
-
-                    this.peer.on('error', () => {
-                        this.createRoom(code, false);
-                    });
+                        this.peer.on('error', (err) => {
+                            console.warn('AutoConnect Peer Error:', err);
+                            // 失敗時無縫轉為建立該房間 Host，不遞迴！
+                            this.createRoom(code, true);
+                        });
+                    } catch(e) {
+                        console.error('AutoConnect Exception:', e);
+                    }
                 }
             }
 
             createRoom(customCode, silent = false) {
-                this.closeRoomModal(); // 立即關閉 Modal，絕對不卡死畫面！
+                this.closeRoomModal(); // 0 毫秒即時關閉 Modal，保證不當機！
                 const rawName = document.getElementById('nickname-input').value.trim() || this.playerName;
                 this.playerName = this.getUniquePlayerName(rawName);
                 localStorage.setItem('2048_player_name', this.playerName);
@@ -957,22 +951,31 @@
                 this.myPeerId = `2048-room-${code}`;
 
                 if (typeof Peer !== 'undefined') {
-                    if (this.peer) try { this.peer.destroy(); } catch(e){}
-                    this.peer = new Peer(this.myPeerId, PEER_CONFIG);
+                    try {
+                        if (this.peer) try { this.peer.destroy(); } catch(e){}
+                        this.peer = new Peer(this.myPeerId, PEER_CONFIG);
 
-                    this.peer.on('open', () => {
-                        this.roomPlayers[this.myPeerId] = this.getSelfPlayerState();
-                        this.updateRoomStateDisplay();
-                        this.startHeartbeat();
+                        this.peer.on('open', () => {
+                            this.roomPlayers[this.myPeerId] = this.getSelfPlayerState();
+                            this.updateRoomStateDisplay();
+                            this.startHeartbeat();
 
-                        if (!silent) {
-                            alert(`房間創建成功！房間號：${code}\n點擊右上角「複製連結」傳給好友即可開打與觀戰！`);
-                        }
-                    });
+                            if (!silent) {
+                                alert(`房間創建成功！房間號：${code}\n點擊右上角「複製連結」傳給好友即可開打與觀戰！`);
+                            }
+                        });
 
-                    this.peer.on('connection', (conn) => {
-                        this.handlePeerConnection(conn);
-                    });
+                        this.peer.on('connection', (conn) => {
+                            this.handlePeerConnection(conn);
+                        });
+
+                        this.peer.on('error', (err) => {
+                            console.warn('CreateRoom Peer Error:', err);
+                            // 絕對不再次遞迴調用 createRoom，避免瀏覽器 JS 死循環當機！
+                        });
+                    } catch(e) {
+                        console.error('CreateRoom Exception:', e);
+                    }
                 }
             }
 
@@ -1714,7 +1717,6 @@
                     roomModal.classList.add('opacity-100');
                 });
                 
-                // 關閉按鈕與點擊背景一律即時關閉 Modal，絕對不卡死！
                 document.getElementById('close-room-modal-btn').addEventListener('click', () => this.closeRoomModal());
                 roomModal.addEventListener('click', (e) => {
                     if (e.target === roomModal) this.closeRoomModal();
