@@ -766,6 +766,11 @@
                 if (portalGoogleBtn) portalGoogleBtn.addEventListener('click', openGoogleModal);
                 if (closeGoogleModalBtn) closeGoogleModalBtn.addEventListener('click', closeGoogleModal);
 
+                // 點擊 Modal 背景也可即時關閉彈窗
+                googleModal.addEventListener('click', (e) => {
+                    if (e.target === googleModal) closeGoogleModal();
+                });
+
                 if (submitGoogleLoginBtn) {
                     submitGoogleLoginBtn.addEventListener('click', () => {
                         const emailInput = document.getElementById('google-email-input').value.trim();
@@ -847,6 +852,14 @@
                 document.getElementById('game-view').classList.remove('hidden');
             }
 
+            closeRoomModal() {
+                const roomModal = document.getElementById('room-modal');
+                if (roomModal) {
+                    roomModal.classList.remove('opacity-100');
+                    roomModal.classList.add('opacity-0', 'pointer-events-none');
+                }
+            }
+
             generateSmartName() {
                 const prefixes = ['神探', '極速', '熱血', '星空', '極限', '無敵', '天才', '狂暴', '王牌', '飛速', '幻影', '超能', '閃電', '破風'];
                 const suffixes = ['小吉', '勇者', '棋手', '挑戰者', '大師', '戰神', '玩家', '高手', '小霸王', '先鋒', '遊俠', '騎士'];
@@ -884,11 +897,13 @@
                     this.showGameView();
                     this.autoConnectRoom(roomFromUrl.toUpperCase());
                 } else {
+                    // 後台默默靜默連結，不鎖死介面
                     this.createRoom(Math.random().toString(36).substring(2, 8).toUpperCase(), true);
                 }
             }
 
             autoConnectRoom(code) {
+                this.closeRoomModal();
                 const rawName = document.getElementById('nickname-input').value.trim() || this.playerName;
                 this.playerName = this.getUniquePlayerName(rawName);
                 localStorage.setItem('2048_player_name', this.playerName);
@@ -898,6 +913,7 @@
                 this.myPeerId = `2048-peer-${Math.random().toString(36).substring(2, 8)}`;
 
                 if (typeof Peer !== 'undefined') {
+                    if (this.peer) try { this.peer.destroy(); } catch(e){}
                     this.peer = new Peer(this.myPeerId, PEER_CONFIG);
 
                     this.peer.on('open', () => {
@@ -919,7 +935,7 @@
                                 try { this.peer.destroy(); } catch(e){}
                                 this.createRoom(code, false);
                             }
-                        }, 1200);
+                        }, 1500);
                     });
 
                     this.peer.on('error', () => {
@@ -929,6 +945,7 @@
             }
 
             createRoom(customCode, silent = false) {
+                this.closeRoomModal(); // 立即關閉 Modal，絕對不卡死畫面！
                 const rawName = document.getElementById('nickname-input').value.trim() || this.playerName;
                 this.playerName = this.getUniquePlayerName(rawName);
                 localStorage.setItem('2048_player_name', this.playerName);
@@ -944,9 +961,6 @@
                     this.peer = new Peer(this.myPeerId, PEER_CONFIG);
 
                     this.peer.on('open', () => {
-                        document.getElementById('room-modal').classList.remove('opacity-100');
-                        document.getElementById('room-modal').classList.add('opacity-0', 'pointer-events-none');
-                        
                         this.roomPlayers[this.myPeerId] = this.getSelfPlayerState();
                         this.updateRoomStateDisplay();
                         this.startHeartbeat();
@@ -1699,10 +1713,13 @@
                     roomModal.classList.remove('opacity-0', 'pointer-events-none');
                     roomModal.classList.add('opacity-100');
                 });
-                document.getElementById('close-room-modal-btn').addEventListener('click', () => {
-                    roomModal.classList.remove('opacity-100');
-                    roomModal.classList.add('opacity-0', 'pointer-events-none');
+                
+                // 關閉按鈕與點擊背景一律即時關閉 Modal，絕對不卡死！
+                document.getElementById('close-room-modal-btn').addEventListener('click', () => this.closeRoomModal());
+                roomModal.addEventListener('click', (e) => {
+                    if (e.target === roomModal) this.closeRoomModal();
                 });
+
                 document.getElementById('action-create-room-btn').addEventListener('click', () => {
                     this.showGameView();
                     this.createRoom();
