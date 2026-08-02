@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>2048 線上多人對戰 (含永久名人堂記憶)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Socket.IO Client -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        board: '#bbada0',
+                        tileBg: '#ccc0b3',
+                    },
+                    fontFamily: {
+                        sans: ['Fredoka', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background-color: #faf8ef;
+            color: #776e65;
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .board-container {
+            position: relative;
+            touch-action: none;
+        }
+
+        .tile-wrapper {
+            position: absolute;
+            transition: top 120ms ease-in-out, left 120ms ease-in-out;
+            padding: 3px;
+            box-sizing: border-box;
+            will-change: top, left;
+            z-index: 10;
+        }
+
+        .tile-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
+        }
+
+        .tile-new .tile-inner {
+            animation: appear 160ms ease-out forwards;
+        }
+
+        .tile-merged .tile-inner {
+            animation: pop 180ms ease-in-out forwards;
+        }
+
+        @keyframes appear {
+            0% { opacity: 0; transform: scale(0); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.85); }
+            50% { transform: scale(1.18); }
+            100% { transform: scale(1); }
+        }
+
+        .score-float {
+            position: absolute;
+            font-weight: 800;
+            color: #8f7a66;
+            font-size: 1.25rem;
+            animation: floatUp 600ms ease-out forwards;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-28px) scale(1.2); }
+        }
+
+        .floating-emoji {
+            position: fixed;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: floatEmoji 2.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        @keyframes floatEmoji {
+            0% { opacity: 0; transform: translateY(20px) scale(0.5) rotate(-10deg); }
+            15% { opacity: 1; transform: translateY(0) scale(1.3) rotate(10deg); }
+            80% { opacity: 1; transform: translateY(-160px) scale(1.1) rotate(-5deg); }
+            100% { opacity: 0; transform: translateY(-240px) scale(0.8) rotate(15deg); }
+        }
+
+        .bump-animation {
+            animation: bump 180ms ease-in-out;
+        }
+
+        @keyframes bump {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        /* 方塊顏色 */
+        .tile-2 { background-color: #eee4da; color: #776e65; font-size: 2rem; }
+        .tile-4 { background-color: #ede0c8; color: #776e65; font-size: 2rem; }
+        .tile-8 { background-color: #f2b179; color: #f9f6f2; font-size: 2rem; }
+        .tile-16 { background-color: #f59563; color: #f9f6f2; font-size: 1.75rem; }
+        .tile-32 { background-color: #f67c5f; color: #f9f6f2; font-size: 1.75rem; }
+        .tile-64 { background-color: #f65e3b; color: #f9f6f2; font-size: 1.75rem; }
+        .tile-128 { background-color: #edcf72; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 12px 2px rgba(237, 207, 114, 0.4); }
+        .tile-256 { background-color: #edcc61; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 15px 3px rgba(237, 204, 97, 0.5); }
+        .tile-512 { background-color: #edc850; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 18px 4px rgba(237, 200, 80, 0.6); }
+        .tile-1024 { background-color: #edc53f; color: #f9f6f2; font-size: 1.25rem; box-shadow: 0 0 22px 5px rgba(237, 197, 63, 0.7); }
+        .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: 1.25rem; box-shadow: 0 0 30px 8px rgba(237, 194, 46, 0.85); }
+        .tile-4096 { background-color: #a040fb; color: #f9f6f2; font-size: 1.25rem; box-shadow: 0 0 30px 8px rgba(160, 64, 251, 0.85); }
+        .tile-8192 { background-color: #f5222d; color: #f9f6f2; font-size: 1.25rem; box-shadow: 0 0 30px 8px rgba(245, 34, 45, 0.85); }
+        .tile-16384 { background-color: #13c2c2; color: #f9f6f2; font-size: 1rem; box-shadow: 0 0 30px 8px rgba(19, 194, 194, 0.85); }
+        .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: 1rem; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+
+        .mini-tile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            font-weight: 800;
+            transition: all 120ms ease;
+        }
+
+        .btn-action {
+            transition: all 0.15s ease;
+        }
+        .btn-action:active {
+            transform: scale(0.95);
+        }
+
+        .backdrop-blur-custom {
+            backdrop-filter: blur(6px);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-amber-50/50 flex flex-col justify-between p-2 sm:p-4 select-none">
+
+    <!-- 頂部導覽與房間狀態列 -->
+    <header class="w-full bg-amber-900 text-white rounded-2xl px-4 py-3 shadow-md mb-3 flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center gap-3">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-300">2048 <span class="text-xs bg-amber-700 text-amber-200 px-2 py-0.5 rounded-full font-medium ml-1">多人競技 (永久記憶版)</span></h1>
+            <div id="room-badge" class="hidden items-center bg-amber-800/80 border border-amber-600 px-3 py-1 rounded-xl text-xs">
+                <span class="text-amber-300 font-bold mr-1.5">房間號:</span>
+                <span id="room-code-display" class="font-extrabold tracking-widest text-white mr-2">-----</span>
+                <button id="copy-room-btn" class="hover:text-amber-300 text-amber-200 font-bold" title="複製邀請連結">
+                    <i class="fas fa-copy"></i> 複製連結
+                </button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+            <!-- 倒數計時器 -->
+            <div id="timer-box" class="hidden bg-amber-950/80 border border-amber-600/70 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                <i class="fas fa-stopwatch text-amber-400 text-sm"></i>
+                <div class="text-[10px] text-amber-200 font-bold uppercase">剩餘時間</div>
+                <div id="match-timer-display" class="text-base font-extrabold text-yellow-300 tracking-wider">03:00</div>
+            </div>
+
+            <!-- 房主設定按鈕 -->
+            <button id="host-settings-btn" class="hidden btn-action bg-amber-700 hover:bg-amber-600 text-amber-100 font-bold text-xs rounded-xl px-3 py-2 border border-amber-500 shadow flex items-center gap-1.5">
+                <i class="fas fa-cog"></i> 房主設定
+            </button>
+
+            <!-- 創建/加入房間 Modal 觸發 -->
+            <button id="open-room-modal-btn" class="btn-action bg-yellow-500 hover:bg-yellow-600 text-amber-950 font-bold text-xs rounded-xl px-3.5 py-2 shadow flex items-center gap-1.5">
+                <i class="fas fa-users"></i> <span id="room-status-btn-text">創建/加入房間</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主要 3 欄式響應式主架構 -->
+    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 items-start">
+        
+        <!-- ==================== 左欄：即時觀戰 Panel (4 Cols) ==================== -->
+        <section class="lg:col-span-4 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[480px]">
+            <div class="flex justify-between items-center pb-2.5 border-b border-amber-100 mb-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h2 class="font-extrabold text-amber-900 text-base">即時觀戰</h2>
+                </div>
+                <span id="spectate-count-badge" class="text-[11px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
+                    在線玩家: 0
+                </span>
+            </div>
+
+            <!-- 觀戰目標選擇列表 -->
+            <div class="mb-2">
+                <div class="text-xs font-bold text-amber-700/80 mb-1">點擊玩家進行實時畫面觀戰：</div>
+                <div id="spectate-players-list" class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                    <div class="text-xs text-amber-800/50 italic py-2">尚無其他玩家，快邀請朋友加入房間！</div>
+                </div>
+            </div>
+
+            <!-- 即時觀戰主棋盤畫面 -->
+            <div class="flex-1 flex flex-col items-center justify-center bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 relative min-h-[260px]">
+                <div id="spectate-target-info" class="w-full flex justify-between items-center mb-2 px-1">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fas fa-user-circle text-amber-700 text-lg"></i>
+                        <span id="spectate-target-name" class="font-bold text-xs text-amber-900">未選取觀戰目標</span>
+                    </div>
+                    <div id="spectate-target-status" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-200/80 text-amber-800">
+                        等待觀戰中
+                    </div>
+                </div>
+
+                <!-- 觀戰 Mini 網格容器 -->
+                <div class="w-full max-w-[240px] aspect-square bg-board rounded-xl p-2 shadow-inner flex items-center justify-center relative" id="spectate-grid-container">
+                    <div id="spectate-mini-grid" class="w-full h-full grid gap-1.5">
+                        <div class="text-center text-amber-100 text-xs flex items-center justify-center h-full font-medium">
+                            點擊上方玩家卡片開始觀戰
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-2.5 flex justify-between w-full max-w-[240px] text-xs font-bold text-amber-800/80">
+                    <div>觀戰得分: <span id="spectate-score-val" class="text-amber-900 font-extrabold">0</span></div>
+                    <div>最高方塊: <span id="spectate-max-tile-val" class="text-amber-900 font-extrabold">0</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 中欄：個人遊戲主戰場 (5 Cols) ==================== -->
+        <section class="lg:col-span-5 flex flex-col items-center justify-start">
+            
+            <!-- 互動嗆聲與表情浮動吧 -->
+            <div class="w-full max-w-md bg-amber-100/90 border border-amber-300 rounded-2xl p-2 mb-2 shadow-sm flex flex-col gap-1.5">
+                <div class="flex justify-between items-center px-1">
+                    <span class="text-[11px] font-extrabold text-amber-900 flex items-center gap-1">
+                        <i class="fas fa-smile-wink text-amber-600"></i> 即時互動 & 嗆聲特快車:
+                    </span>
+                    <select id="quick-taunt-select" class="bg-white border border-amber-300 text-amber-900 font-bold text-[11px] rounded-lg px-2 py-0.5 focus:outline-none cursor-pointer">
+                        <option value="" disabled selected>💬 選擇嗆聲短語...</option>
+                        <option value="快要追上你囉！⚡">快要追上你囉！⚡</option>
+                        <option value="手滑犯錯了啦！😭">手滑犯錯了啦！😭</option>
+                        <option value="神操作！學著點 😎">神操作！學著點 😎</option>
+                        <option value="穩住，我們能贏！🔥">穩住，我們能贏！🔥</option>
+                        <option value="殘局交給我！👑">殘局交給我！👑</option>
+                        <option value="求求別合太快 😱">求求別合太快 😱</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-around items-center bg-white/80 rounded-xl py-1 px-2 border border-amber-200">
+                    <button onclick="gameInstance.sendEmoji('😂')" class="btn-action hover:scale-125 text-xl" title="笑死">😂</button>
+                    <button onclick="gameInstance.sendEmoji('🔥')" class="btn-action hover:scale-125 text-xl" title="火熱">🔥</button>
+                    <button onclick="gameInstance.sendEmoji('💩')" class="btn-action hover:scale-125 text-xl" title="便便">💩</button>
+                    <button onclick="gameInstance.sendEmoji('👑')" class="btn-action hover:scale-125 text-xl" title="皇冠">👑</button>
+                    <button onclick="gameInstance.sendEmoji('👍')" class="btn-action hover:scale-125 text-xl" title="讚">👍</button>
+                    <button onclick="gameInstance.sendEmoji('😱')" class="btn-action hover:scale-125 text-xl" title="驚嚇">😱</button>
+                    <button onclick="gameInstance.sendEmoji('💣')" class="btn-action hover:scale-125 text-xl" title="炸彈">💣</button>
+                    <button onclick="gameInstance.sendEmoji('🏆')" class="btn-action hover:scale-125 text-xl" title="獎盃">🏆</button>
+                </div>
+            </div>
+
+            <!-- 遊戲頭部選單與控制選項 -->
+            <div class="w-full max-w-md flex justify-between items-center mb-2">
+                <div class="flex gap-1.5">
+                    <select id="grid-size-select" class="bg-amber-100/80 border-2 border-amber-300/60 text-amber-900 font-bold text-xs rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer">
+                        <option value="3">3 x 3</option>
+                        <option value="4" selected>4 x 4 (經典)</option>
+                        <option value="5">5 x 5</option>
+                        <option value="6">6 x 6</option>
+                    </select>
+                    <button id="sound-btn" class="btn-action bg-amber-100/80 border-2 border-amber-300/60 text-amber-900 font-bold text-xs rounded-xl px-2.5 py-1.5 flex items-center gap-1">
+                        <i id="sound-icon" class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+
+                <div class="flex gap-1.5">
+                    <button id="undo-btn" class="btn-action bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fas fa-undo"></i> 復原
+                    </button>
+                    <button id="ai-btn" class="btn-action bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1">
+                        <i class="fas fa-robot"></i> <span id="ai-btn-text">AI 代打</span>
+                    </button>
+                    <button id="restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1">
+                        <i class="fas fa-sync-alt"></i> 重來
+                    </button>
+                </div>
+            </div>
+
+            <!-- 計分板與個人資訊 -->
+            <div class="w-full max-w-md flex justify-between items-center mb-2 px-1">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="player-self-name" class="font-extrabold text-amber-900 text-sm">我 (玩家)</span>
+                </div>
+                <div class="flex gap-2">
+                    <div id="score-container" class="relative bg-board/90 px-3 py-1 rounded-xl text-center min-w-[70px] shadow-sm">
+                        <div class="text-[9px] uppercase font-bold text-amber-100 tracking-wider">分數</div>
+                        <div id="score" class="text-base font-bold text-white leading-tight">0</div>
+                    </div>
+                    <div class="bg-board/90 px-3 py-1 rounded-xl text-center min-w-[70px] shadow-sm">
+                        <div class="text-[9px] uppercase font-bold text-amber-100 tracking-wider">最高分</div>
+                        <div id="best-score" class="text-base font-bold text-white leading-tight">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主 2048 棋盤容器 -->
+            <main class="w-full max-w-md relative aspect-square bg-board rounded-2xl p-2.5 sm:p-3 shadow-inner flex flex-col justify-between board-container" id="board-container">
+                <div id="grid-background" class="w-full h-full grid gap-2.5 sm:gap-3"></div>
+                <div id="tile-container" class="absolute inset-2.5 sm:inset-3 pointer-events-none"></div>
+
+                <!-- 遊戲結束/勝負 Overlay -->
+                <div id="game-overlay" class="absolute inset-0 bg-amber-950/80 backdrop-blur-custom rounded-2xl flex flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-all duration-300 z-30">
+                    <div id="overlay-icon" class="text-5xl mb-2 text-yellow-400">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h2 id="overlay-title" class="text-2xl sm:text-3xl font-extrabold text-white mb-1">恭喜達成 2048！</h2>
+                    <p id="overlay-msg" class="text-amber-200 text-xs mb-5 font-medium">你合成了最高方塊！</p>
+                    <div class="flex gap-2">
+                        <button id="keep-going-btn" class="btn-action bg-amber-500 hover:bg-amber-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-md hidden">
+                            繼續挑戰
+                        </button>
+                        <button id="overlay-restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md">
+                            再玩一局
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 手機十字方向按鈕 -->
+            <div class="w-full max-w-md mt-2 flex flex-col items-center">
+                <div class="grid grid-cols-3 gap-1.5 w-44 text-amber-900">
+                    <div></div>
+                    <button id="btn-up" class="btn-action bg-amber-200/80 active:bg-amber-300 py-2 rounded-xl shadow font-bold text-base"><i class="fas fa-chevron-up"></i></button>
+                    <div></div>
+                    <button id="btn-left" class="btn-action bg-amber-200/80 active:bg-amber-300 py-2 rounded-xl shadow font-bold text-base"><i class="fas fa-chevron-left"></i></button>
+                    <button id="btn-down" class="btn-action bg-amber-200/80 active:bg-amber-300 py-2 rounded-xl shadow font-bold text-base"><i class="fas fa-chevron-down"></i></button>
+                    <button id="btn-right" class="btn-action bg-amber-200/80 active:bg-amber-300 py-2 rounded-xl shadow font-bold text-base"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 右欄：即時排行榜 & 永久名人堂 (3 Cols) ==================== -->
+        <section class="lg:col-span-3 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[480px]">
+            <!-- 分頁切換鈕：房間對戰 vs 跨重啟歷史名人堂 -->
+            <div class="flex bg-amber-100/70 rounded-xl p-1 mb-3 border border-amber-200">
+                <button id="tab-room-rank-btn" class="flex-1 py-1.5 rounded-lg text-xs font-extrabold transition-all bg-white text-amber-950 shadow-sm">
+                    當前房間對戰
+                </button>
+                <button id="tab-hall-fame-btn" class="flex-1 py-1.5 rounded-lg text-xs font-extrabold transition-all text-amber-800 hover:text-amber-950">
+                    🏆 歷史名人堂
+                </button>
+            </div>
+
+            <!-- 發起比賽按鈕 (僅房主可見) -->
+            <div id="host-control-box" class="hidden mb-3">
+                <button id="start-match-btn" class="w-full btn-action bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl py-2.5 shadow border border-emerald-500 flex items-center justify-center gap-1.5">
+                    <i class="fas fa-play-circle text-sm"></i> 發起房間對戰比賽
+                </button>
+            </div>
+
+            <!-- 當前房間排行榜列表 -->
+            <div id="leaderboard-list" class="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[380px] scrollbar-thin">
+                <div class="text-xs text-amber-800/60 text-center py-6">
+                    單人模式中。創建或加入房間即可體驗多人即時排行榜競爭！
+                </div>
+            </div>
+
+            <!-- 歷史名人堂列表 (隱藏/顯示切換) -->
+            <div id="hall-of-fame-list" class="hidden flex-1 flex-col gap-2 overflow-y-auto max-h-[380px] scrollbar-thin">
+                <div class="text-xs text-amber-800/60 text-center py-6">
+                    讀取歷史紀錄中...
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ==================== Modal 1: 創建/加入房間彈窗 ==================== -->
+    <div id="room-modal" class="fixed inset-0 bg-amber-950/70 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-300 relative">
+            <button id="close-room-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-amber-900 text-xl font-bold">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-2 font-bold">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-amber-950">線上多人遊戲大廳</h3>
+                <p class="text-xs text-amber-700 mt-1">輸入暱稱，即可隨時發起房間邀請好友聯機對戰！</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">玩家暱稱：</label>
+                    <input type="text" id="nickname-input" class="w-full bg-amber-50/80 border-2 border-amber-200 rounded-xl px-3.5 py-2.5 text-amber-950 font-bold text-sm focus:outline-none focus:border-amber-500" placeholder="請輸入你的暱稱..." maxlength="12">
+                </div>
+
+                <div class="pt-2 grid grid-cols-2 gap-3">
+                    <button id="action-create-room-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold py-3 px-4 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                        <i class="fas fa-plus-circle"></i> 創建全新房間
+                    </button>
+                    <button id="action-join-room-btn" class="btn-action bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                        <i class="fas fa-sign-in-alt"></i> 加入現有房間
+                    </button>
+                </div>
+
+                <div id="join-code-container" class="hidden pt-2 border-t border-amber-100">
+                    <label class="block text-xs font-bold text-amber-900 mb-1">請輸入 6 位數房間號：</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="room-code-input" class="flex-1 bg-amber-50/80 border-2 border-amber-200 rounded-xl px-3.5 py-2 text-amber-950 font-bold text-base tracking-widest uppercase focus:outline-none focus:border-amber-500" placeholder="例如: X7A9K2" maxlength="6">
+                        <button id="submit-join-room-btn" class="btn-action bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow">
+                            確定加入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== Modal 2: 房主比賽設定彈窗 ==================== -->
+    <div id="host-settings-modal" class="fixed inset-0 bg-amber-950/70 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-300 relative">
+            <button id="close-host-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-amber-900 text-xl font-bold">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-xl font-extrabold text-amber-950 mb-4 text-center"><i class="fas fa-cog text-amber-600 mr-1.5"></i>房主比賽設定</h3>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">比賽限時：</label>
+                    <select id="modal-duration-select" class="w-full bg-amber-50 border-2 border-amber-200 rounded-xl px-3 py-2 text-amber-900 font-bold text-xs">
+                        <option value="180" selected>3 分鐘 (標準極速賽)</option>
+                        <option value="300">5 分鐘 (經典耐力賽)</option>
+                        <option value="600">10 分鐘 (大師馬拉松)</option>
+                        <option value="0">無時間限制</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">房間最大人數上限：</label>
+                    <select id="modal-max-players-select" class="w-full bg-amber-50 border-2 border-amber-200 rounded-xl px-3 py-2 text-amber-900 font-bold text-xs">
+                        <option value="2">2 人 (1v1 單挑)</option>
+                        <option value="4">4 人</option>
+                        <option value="8" selected>8 人 (標準混戰)</option>
+                        <option value="16">16 人 (大型比賽)</option>
+                    </select>
+                </div>
+
+                <button id="save-host-settings-btn" class="w-full btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold py-2.5 rounded-xl text-xs shadow mt-2">
+                    保存設定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== Modal 3: 比賽結算頒獎台彈窗 ==================== -->
+    <div id="match-results-modal" class="fixed inset-0 bg-amber-950/80 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-yellow-400 text-center relative">
+            <div class="text-5xl text-yellow-400 mb-2">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h3 class="text-3xl font-extrabold text-amber-950 mb-1">比賽圓滿結束！</h3>
+            <p id="results-winner-text" class="text-sm font-bold text-amber-700 mb-4">冠軍得主是：<span class="text-amber-950 text-base underline">-----</span></p>
+
+            <div class="bg-amber-50 rounded-2xl p-3 border border-amber-200 mb-5 max-h-48 overflow-y-auto" id="results-podium-list"></div>
+
+            <button id="close-results-modal-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow">
+                返回大廳
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 音效引擎
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+            }
+
+            playMove() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(90, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playMerge(value) {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const baseFreq = 220 + Math.log2(value || 2) * 60;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(baseFreq, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.4, this.ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            }
+
+            playEmojiSound() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+        }
+
+        let tileUniqueId = 1;
+        class Tile {
+            constructor(r, c, value) {
+                this.r = r;
+                this.c = c;
+                this.value = value || 2;
+                this.id = tileUniqueId++;
+                this.previousPosition = null;
+                this.mergedFrom = null;
+                this.isNew = true;
+            }
+
+            savePosition() {
+                this.previousPosition = { r: this.r, c: this.c };
+            }
+
+            updatePosition(r, c) {
+                this.r = r;
+                this.c = c;
+            }
+        }
+
+        class Game2048 {
+            constructor() {
+                this.size = 4;
+                this.grid = [];
+                this.tiles = [];
+                this.score = 0;
+                this.moveCount = 0;
+                this.bestScore = parseInt(localStorage.getItem('2048_best_score') || '0', 10);
+                this.history = [];
+                this.won = false;
+                this.keepPlaying = false;
+                this.over = false;
+                this.aiInterval = null;
+                this.sound = new SoundEngine();
+
+                // Room & Multiplayer Socket State
+                this.socket = null;
+                this.roomId = null;
+                this.playerName = localStorage.getItem('2048_player_name') || `玩家_${Math.floor(Math.random()*900+100)}`;
+                this.isHost = false;
+                this.spectateTargetId = null;
+                this.roomPlayers = {};
+                this.hallOfFameData = [];
+
+                this.gridBg = document.getElementById('grid-background');
+                this.tileContainer = document.getElementById('tile-container');
+                this.boardContainer = document.getElementById('board-container');
+                this.scoreEl = document.getElementById('score');
+                this.scoreContainer = document.getElementById('score-container');
+                this.bestScoreEl = document.getElementById('best-score');
+                this.overlay = document.getElementById('game-overlay');
+                this.undoBtn = document.getElementById('undo-btn');
+
+                this.initUI();
+                this.initSocket();
+                this.restart();
+            }
+
+            initUI() {
+                this.bestScoreEl.textContent = this.bestScore;
+                document.getElementById('player-self-name').textContent = this.playerName;
+                document.getElementById('nickname-input').value = this.playerName;
+                this.setupInputs();
+                this.setupModals();
+            }
+
+            initSocket() {
+                if (typeof io !== 'undefined') {
+                    this.socket = io();
+                    
+                    this.socket.on('connect', () => {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const roomFromUrl = urlParams.get('room');
+                        if (roomFromUrl) {
+                            this.joinRoom(roomFromUrl.toUpperCase());
+                        }
+                    });
+
+                    this.socket.on('hall_of_fame_data', (data) => {
+                        this.hallOfFameData = data || [];
+                        this.renderHallOfFame();
+                    });
+
+                    this.socket.on('room_joined', (data) => {
+                        this.roomId = data.roomId;
+                        this.isHost = data.isHost;
+                        this.onRoomStateUpdated(data.roomState);
+                    });
+
+                    this.socket.on('room_updated', (data) => {
+                        this.onRoomStateUpdated(data);
+                    });
+
+                    this.socket.on('player_state_changed', (data) => {
+                        this.roomPlayers[data.playerId] = data.playerData;
+                        this.renderLeaderboard(data.leaderboard);
+                        this.renderSpectateList();
+                        
+                        if (this.spectateTargetId === data.playerId) {
+                            this.renderSpectateBoard(data.playerData);
+                        }
+                    });
+
+                    this.socket.on('emoji_received', (data) => {
+                        this.sound.playEmojiSound();
+                        this.displayFloatingEmoji(data.emoji, data.playerName);
+                    });
+
+                    this.socket.on('taunt_received', (data) => {
+                        this.sound.playEmojiSound();
+                        this.displayTauntBubble(data.playerName, data.text);
+                    });
+
+                    this.socket.on('match_started', (data) => {
+                        this.restart();
+                        document.getElementById('timer-box').classList.remove('hidden');
+                        this.renderLeaderboard(data.leaderboard);
+                    });
+
+                    this.socket.on('timer_tick', (data) => {
+                        this.updateTimerDisplay(data.remainingTime);
+                    });
+
+                    this.socket.on('match_ended', (data) => {
+                        if (data.hallOfFame) {
+                            this.hallOfFameData = data.hallOfFame;
+                            this.renderHallOfFame();
+                        }
+                        this.showResultsModal(data);
+                    });
+
+                    this.socket.on('player_left', (data) => {
+                        delete this.roomPlayers[data.playerId];
+                        if (this.socket.id === data.hostSocketId) {
+                            this.isHost = true;
+                        }
+                        this.renderLeaderboard(data.leaderboard);
+                        this.renderSpectateList();
+                    });
+                }
+            }
+
+            sendEmoji(emoji) {
+                if (this.socket && this.roomId) {
+                    this.socket.emit('send_emoji', { emoji });
+                } else {
+                    this.sound.playEmojiSound();
+                    this.displayFloatingEmoji(emoji, this.playerName);
+                }
+            }
+
+            sendTaunt(text) {
+                if (this.socket && this.roomId) {
+                    this.socket.emit('send_taunt', { text });
+                } else {
+                    this.sound.playEmojiSound();
+                    this.displayTauntBubble(this.playerName, text);
+                }
+            }
+
+            displayFloatingEmoji(emoji, playerName) {
+                const el = document.createElement('div');
+                el.className = 'floating-emoji';
+                el.innerHTML = `<div>${emoji}</div><div class="text-[10px] bg-amber-950/80 text-white font-bold px-1.5 py-0.5 rounded-full text-center">${playerName}</div>`;
+                
+                const randomX = Math.floor(Math.random() * (window.innerWidth - 100)) + 30;
+                el.style.left = `${randomX}px`;
+                el.style.bottom = `80px`;
+
+                document.body.appendChild(el);
+                setTimeout(() => {
+                    if (el && el.parentNode) el.parentNode.removeChild(el);
+                }, 2200);
+            }
+
+            displayTauntBubble(playerName, text) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-16 left-1/2 -translate-x-1/2 bg-amber-950/90 border-2 border-amber-400 text-amber-100 font-extrabold px-4 py-2 rounded-2xl shadow-2xl z-50 text-sm flex items-center gap-2 animate-bounce';
+                toast.innerHTML = `<span class="text-yellow-400">[${playerName}]</span>: ${text}`;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 2500);
+            }
+
+            onRoomStateUpdated(state) {
+                document.getElementById('room-badge').classList.remove('hidden');
+                document.getElementById('room-badge').classList.add('flex');
+                document.getElementById('room-code-display').textContent = state.id;
+                document.getElementById('room-status-btn-text').textContent = `房間: ${state.id}`;
+
+                if (this.isHost) {
+                    document.getElementById('host-settings-btn').classList.remove('hidden');
+                    document.getElementById('host-control-box').classList.remove('hidden');
+                } else {
+                    document.getElementById('host-settings-btn').classList.add('hidden');
+                    document.getElementById('host-control-box').classList.add('hidden');
+                }
+
+                if (state.players) {
+                    this.roomPlayers = {};
+                    state.players.forEach(p => { this.roomPlayers[p.id] = p; });
+                }
+
+                this.renderLeaderboard(state.leaderboard || []);
+                this.renderSpectateList();
+                this.emitPlayerState();
+            }
+
+            emitPlayerState() {
+                if (!this.socket || !this.roomId) return;
+                
+                const gridCopy = Array(this.size).fill(null).map(() => Array(this.size).fill(0));
+                let maxTile = 2;
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.grid[r][c]) {
+                            const val = this.grid[r][c].value;
+                            gridCopy[r][c] = val;
+                            if (val > maxTile) maxTile = val;
+                        }
+                    }
+                }
+
+                let status = 'playing';
+                if (this.over) status = 'gameover';
+                else if (this.won) status = 'won';
+
+                this.socket.emit('update_player_state', {
+                    score: this.score,
+                    maxTile: maxTile,
+                    moveCount: this.moveCount,
+                    status: status,
+                    grid: gridCopy
+                });
+            }
+
+            buildBackgroundGrid() {
+                this.gridBg.innerHTML = '';
+                this.gridBg.style.gridTemplateColumns = `repeat(${this.size}, minmax(0, 1fr))`;
+                this.gridBg.style.gridTemplateRows = `repeat(${this.size}, minmax(0, 1fr))`;
+
+                for (let i = 0; i < this.size * this.size; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'bg-tileBg/60 rounded-lg w-full h-full';
+                    this.gridBg.appendChild(cell);
+                }
+            }
+
+            restart() {
+                this.stopAI();
+                this.size = parseInt(document.getElementById('grid-size-select').value, 10);
+                
+                this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
+                this.tiles = [];
+                this.tileContainer.innerHTML = '';
+                this.score = 0;
+                this.moveCount = 0;
+                this.history = [];
+                this.won = false;
+                this.keepPlaying = false;
+                this.over = false;
+
+                this.buildBackgroundGrid();
+                this.hideOverlay();
+                this.updateScore(0, true);
+                this.updateUndoButton();
+
+                this.addRandomTile();
+                this.addRandomTile();
+                this.actuate();
+                this.emitPlayerState();
+            }
+
+            addRandomTile() {
+                const emptyCells = [];
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (!this.grid[r][c]) {
+                            emptyCells.push({ r, c });
+                        }
+                    }
+                }
+
+                if (emptyCells.length > 0) {
+                    const choice = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    const val = Math.random() < 0.9 ? 2 : 4;
+                    const tile = new Tile(choice.r, choice.c, val);
+                    this.grid[choice.r][choice.c] = tile;
+                    this.tiles.push(tile);
+                    return tile;
+                }
+                return null;
+            }
+
+            saveState() {
+                const gridCopy = Array(this.size).fill(null).map(() => Array(this.size).fill(0));
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.grid[r][c]) gridCopy[r][c] = this.grid[r][c].value;
+                    }
+                }
+                const snapshot = {
+                    gridValues: gridCopy,
+                    score: this.score,
+                    won: this.won,
+                    over: this.over
+                };
+                this.history.push(snapshot);
+                if (this.history.length > 15) this.history.shift();
+                this.updateUndoButton();
+            }
+
+            undo() {
+                if (this.history.length === 0 || this.over) return;
+                const lastState = this.history.pop();
+                
+                this.score = lastState.score;
+                this.won = lastState.won;
+                this.over = lastState.over;
+
+                this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
+                this.tiles = [];
+                this.tileContainer.innerHTML = '';
+
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        const val = lastState.gridValues[r][c];
+                        if (val > 0) {
+                            const tile = new Tile(r, c, val);
+                            tile.isNew = false;
+                            this.grid[r][c] = tile;
+                            this.tiles.push(tile);
+                        }
+                    }
+                }
+
+                this.hideOverlay();
+                this.updateScore(0, true);
+                this.actuate();
+                this.updateUndoButton();
+                this.emitPlayerState();
+            }
+
+            updateUndoButton() {
+                this.undoBtn.disabled = this.history.length === 0;
+            }
+
+            prepareTiles() {
+                this.tiles.forEach(tile => {
+                    tile.savePosition();
+                    tile.mergedFrom = null;
+                    tile.isNew = false;
+                });
+            }
+
+            move(direction) {
+                if (this.over) return false;
+
+                const vectors = [
+                    { r: -1, c: 0 }, // 0: UP
+                    { r: 0, c: 1 },  // 1: RIGHT
+                    { r: 1, c: 0 },  // 2: DOWN
+                    { r: 0, c: -1 }  // 3: LEFT
+                ];
+
+                const vector = vectors[direction];
+                const traversals = this.buildTraversals(vector);
+                let moved = false;
+                let mergedTotalScore = 0;
+                let mergedAny = false;
+
+                this.prepareTiles();
+
+                traversals.r.forEach(r => {
+                    traversals.c.forEach(c => {
+                        const tile = this.grid[r][c];
+                        if (tile) {
+                            const positions = this.findFarthestPosition({ r, c }, vector);
+                            const nextTile = (this.withinBounds(positions.next) && this.grid[positions.next.r]) 
+                                ? this.grid[positions.next.r][positions.next.c] 
+                                : null;
+
+                            if (nextTile && nextTile.value === tile.value && !nextTile.mergedFrom) {
+                                const mergedValue = tile.value * 2;
+                                const mergedTile = new Tile(positions.next.r, positions.next.c, mergedValue);
+                                mergedTile.mergedFrom = [tile, nextTile];
+                                mergedTile.isNew = false;
+
+                                this.grid[r][c] = null;
+                                this.grid[positions.next.r][positions.next.c] = mergedTile;
+
+                                this.tiles = this.tiles.filter(t => t !== tile && t !== nextTile);
+                                this.tiles.push(mergedTile);
+
+                                tile.updatePosition(positions.next.r, positions.next.c);
+
+                                mergedTotalScore += mergedValue;
+                                mergedAny = true;
+                                moved = true;
+                            } else {
+                                if (r !== positions.farthest.r || c !== positions.farthest.c) {
+                                    this.grid[r][c] = null;
+                                    this.grid[positions.farthest.r][positions.farthest.c] = tile;
+                                    tile.updatePosition(positions.farthest.r, positions.farthest.c);
+                                    moved = true;
+                                }
+                            }
+                        }
+                    });
+                });
+
+                if (moved) {
+                    this.moveCount++;
+                    this.saveState();
+
+                    if (mergedAny) {
+                        this.sound.playMerge(mergedTotalScore);
+                        this.showScoreFloat(mergedTotalScore);
+                    } else {
+                        this.sound.playMove();
+                    }
+
+                    this.updateScore(mergedTotalScore);
+                    this.addRandomTile();
+                    this.actuate();
+                    this.emitPlayerState();
+
+                    if (!this.won && !this.keepPlaying && this.hasTileValue(2048)) {
+                        this.won = true;
+                        this.showOverlay(true);
+                    } else if (!this.canMove()) {
+                        this.over = true;
+                        this.showOverlay(false);
+                    }
+                }
+
+                return moved;
+            }
+
+            buildTraversals(vector) {
+                const traversals = { r: [], c: [] };
+                for (let pos = 0; pos < this.size; pos++) {
+                    traversals.r.push(pos);
+                    traversals.c.push(pos);
+                }
+
+                if (vector.r === 1) traversals.r.reverse();
+                if (vector.c === 1) traversals.c.reverse();
+
+                return traversals;
+            }
+
+            findFarthestPosition(cell, vector) {
+                let previous;
+                let current = { r: cell.r, c: cell.c };
+
+                do {
+                    previous = current;
+                    current = { r: previous.r + vector.r, c: previous.c + vector.c };
+                } while (
+                    this.withinBounds(current) &&
+                    !this.grid[current.r][current.c]
+                );
+
+                return {
+                    farthest: previous,
+                    next: current
+                };
+            }
+
+            withinBounds(position) {
+                return position.r >= 0 && position.r < this.size &&
+                       position.c >= 0 && position.c < this.size;
+            }
+
+            canMove() {
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (!this.grid[r][c]) return true;
+                        const val = this.grid[r][c].value;
+                        if (r < this.size - 1 && this.grid[r + 1][c] && this.grid[r + 1][c].value === val) return true;
+                        if (c < this.size - 1 && this.grid[r][c + 1] && this.grid[r][c + 1].value === val) return true;
+                    }
+                }
+                return false;
+            }
+
+            hasTileValue(val) {
+                return this.tiles.some(t => t.value === val);
+            }
+
+            actuate() {
+                window.requestAnimationFrame(() => {
+                    const step = 100 / this.size;
+                    const activeIds = new Set();
+
+                    this.tiles.forEach(tile => {
+                        activeIds.add(tile.id);
+                        let tileWrapper = document.getElementById(`tile-wrap-${tile.id}`);
+
+                        if (!tileWrapper) {
+                            tileWrapper = document.createElement('div');
+                            tileWrapper.id = `tile-wrap-${tile.id}`;
+                            tileWrapper.innerHTML = `<div class="tile-inner"></div>`;
+                            this.tileContainer.appendChild(tileWrapper);
+                        }
+
+                        const innerEl = tileWrapper.querySelector('.tile-inner');
+                        
+                        let wrapperClass = 'tile-wrapper';
+                        if (tile.isNew) wrapperClass += ' tile-new';
+                        if (tile.mergedFrom) wrapperClass += ' tile-merged';
+
+                        tileWrapper.className = wrapperClass;
+                        tileWrapper.style.top = `${tile.r * step}%`;
+                        tileWrapper.style.left = `${tile.c * step}%`;
+                        tileWrapper.style.width = `${step}%`;
+                        tileWrapper.style.height = `${step}%`;
+
+                        let colorClass = `tile-${tile.value}`;
+                        if (tile.value > 16384) colorClass = 'tile-super';
+                        innerEl.className = `tile-inner ${colorClass}`;
+                        innerEl.textContent = tile.value;
+                    });
+
+                    const allWrappers = Array.from(this.tileContainer.querySelectorAll('.tile-wrapper'));
+                    allWrappers.forEach(el => {
+                        const idStr = el.id.replace('tile-wrap-', '');
+                        if (idStr && !activeIds.has(parseInt(idStr, 10))) {
+                            setTimeout(() => {
+                                if (el && el.parentNode) el.parentNode.removeChild(el);
+                            }, 100);
+                        }
+                    });
+                });
+            }
+
+            updateScore(delta, isReset = false) {
+                if (isReset) {
+                    this.score = delta;
+                } else {
+                    this.score += delta;
+                }
+
+                this.scoreEl.textContent = this.score;
+
+                if (delta > 0) {
+                    this.scoreContainer.classList.remove('bump-animation');
+                    void this.scoreContainer.offsetWidth;
+                    this.scoreContainer.classList.add('bump-animation');
+                }
+
+                if (this.score > this.bestScore) {
+                    this.bestScore = this.score;
+                    this.bestScoreEl.textContent = this.bestScore;
+                    localStorage.setItem('2048_best_score', this.bestScore.toString());
+                }
+            }
+
+            showScoreFloat(addedScore) {
+                if (addedScore <= 0) return;
+                const floatEl = document.createElement('div');
+                floatEl.className = 'score-float';
+                floatEl.textContent = `+${addedScore}`;
+                floatEl.style.left = '50%';
+                floatEl.style.top = '-10px';
+                
+                this.scoreContainer.appendChild(floatEl);
+
+                setTimeout(() => {
+                    if (floatEl && floatEl.parentNode) {
+                        floatEl.parentNode.removeChild(floatEl);
+                    }
+                }, 600);
+            }
+
+            showOverlay(isWin) {
+                const title = document.getElementById('overlay-title');
+                const msg = document.getElementById('overlay-msg');
+                const icon = document.getElementById('overlay-icon');
+                const keepBtn = document.getElementById('keep-going-btn');
+
+                if (isWin) {
+                    title.textContent = '恭喜達成 2048！';
+                    msg.textContent = '你的智謀超群！要繼續挑戰更高的夢幻數字嗎？';
+                    icon.innerHTML = '<i class="fas fa-crown text-yellow-400"></i>';
+                    keepBtn.classList.remove('hidden');
+                } else {
+                    title.textContent = '遊戲結束！';
+                    msg.textContent = '盤面已滿無路可走！';
+                    icon.innerHTML = '<i class="fas fa-skull text-amber-500"></i>';
+                    keepBtn.classList.add('hidden');
+                }
+
+                this.overlay.classList.remove('opacity-0', 'pointer-events-none');
+                this.overlay.classList.add('opacity-100');
+            }
+
+            hideOverlay() {
+                this.overlay.classList.remove('opacity-100');
+                this.overlay.classList.add('opacity-0', 'pointer-events-none');
+            }
+
+            toggleAI() {
+                if (this.aiInterval) {
+                    this.stopAI();
+                } else {
+                    document.getElementById('ai-btn-text').textContent = '停止 AI';
+                    document.getElementById('ai-btn').classList.replace('bg-indigo-600', 'bg-rose-600');
+                    
+                    this.aiInterval = setInterval(() => {
+                        if (this.over) {
+                            this.stopAI();
+                            return;
+                        }
+                        
+                        const bestDir = this.getBestMoveAI();
+                        if (bestDir !== -1) {
+                            this.move(bestDir);
+                        } else {
+                            this.stopAI();
+                        }
+                    }, 110);
+                }
+            }
+
+            stopAI() {
+                if (this.aiInterval) {
+                    clearInterval(this.aiInterval);
+                    this.aiInterval = null;
+                    document.getElementById('ai-btn-text').textContent = 'AI 代打';
+                    document.getElementById('ai-btn').classList.replace('bg-rose-600', 'bg-indigo-600');
+                }
+            }
+
+            getBestMoveAI() {
+                const gridCopy = Array(this.size).fill(null).map(() => Array(this.size).fill(0));
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.grid[r][c]) gridCopy[r][c] = this.grid[r][c].value;
+                    }
+                }
+
+                const depth = this.size <= 4 ? 3 : 2;
+                const result = this.expectimax(gridCopy, depth, true);
+                
+                if (result.move !== -1 && result.move !== undefined) {
+                    return result.move;
+                }
+
+                for (let dir = 0; dir < 4; dir++) {
+                    if (this.simulateMoveOnGrid(gridCopy, dir).moved) return dir;
+                }
+
+                return -1;
+            }
+
+            expectimax(grid, depth, isPlayerTurn) {
+                if (depth === 0) return { score: this.evaluateGrid(grid) };
+
+                if (isPlayerTurn) {
+                    let bestScore = -Infinity;
+                    let bestMove = -1;
+
+                    for (let dir = 0; dir < 4; dir++) {
+                        const sim = this.simulateMoveOnGrid(grid, dir);
+                        if (sim.moved) {
+                            const res = this.expectimax(sim.grid, depth - 1, false);
+                            if (res.score > bestScore) {
+                                bestScore = res.score;
+                                bestMove = dir;
+                            }
+                        }
+                    }
+
+                    return { score: bestScore === -Infinity ? this.evaluateGrid(grid) : bestScore, move: bestMove };
+                } else {
+                    const emptyCells = [];
+                    for (let r = 0; r < this.size; r++) {
+                        for (let c = 0; c < this.size; c++) {
+                            if (grid[r][c] === 0) emptyCells.push({ r, c });
+                        }
+                    }
+
+                    if (emptyCells.length === 0) return { score: this.evaluateGrid(grid) };
+
+                    const sampleCells = emptyCells.length > 5 ? emptyCells.slice(0, 5) : emptyCells;
+                    let totalScore = 0;
+
+                    for (const cell of sampleCells) {
+                        grid[cell.r][cell.c] = 2;
+                        const res2 = this.expectimax(grid, depth - 1, true);
+
+                        grid[cell.r][cell.c] = 4;
+                        const res4 = this.expectimax(grid, depth - 1, true);
+
+                        grid[cell.r][cell.c] = 0;
+
+                        totalScore += (res2.score * 0.9 + res4.score * 0.1);
+                    }
+
+                    return { score: totalScore / sampleCells.length };
+                }
+            }
+
+            evaluateGrid(grid) {
+                let score = 0;
+                let emptyCount = 0;
+
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (grid[r][c] === 0) emptyCount++;
+                    }
+                }
+                score += emptyCount * emptyCount * 200;
+
+                let weights = [];
+                if (this.size === 4) {
+                    weights = [
+                        [65536, 32768, 16384, 8192],
+                        [512,   1024,  2048,  4096],
+                        [256,   128,   64,    32],
+                        [2,     4,     8,     16]
+                    ];
+                } else {
+                    weights = Array(this.size).fill(0).map(() => Array(this.size).fill(0));
+                    let val = Math.pow(2, this.size * this.size);
+                    for (let r = 0; r < this.size; r++) {
+                        if (r % 2 === 0) {
+                            for (let c = 0; c < this.size; c++) { weights[r][c] = val; val /= 2; }
+                        } else {
+                            for (let c = this.size - 1; c >= 0; c--) { weights[r][c] = val; val /= 2; }
+                        }
+                    }
+                }
+
+                let maxTileVal = 0;
+                let maxTileR = 0, maxTileC = 0;
+
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        const val = grid[r][c];
+                        if (val > 0) {
+                            score += val * weights[r][c];
+                            if (val > maxTileVal) {
+                                maxTileVal = val;
+                                maxTileR = r;
+                                maxTileC = c;
+                            }
+                        }
+                    }
+                }
+
+                if ((maxTileR === 0 || maxTileR === this.size - 1) && (maxTileC === 0 || maxTileC === this.size - 1)) {
+                    score += maxTileVal * 1000;
+                }
+
+                return score;
+            }
+
+            simulateMoveOnGrid(inputGrid, dir) {
+                const vectors = [{ r: -1, c: 0 }, { r: 0, c: 1 }, { r: 1, c: 0 }, { r: 0, c: -1 }];
+                const vector = vectors[dir];
+                const gridCopy = inputGrid.map(row => [...row]);
+                const merged = Array(this.size).fill(false).map(() => Array(this.size).fill(false));
+                let moved = false;
+                let gainedScore = 0;
+
+                const traversals = this.buildTraversals(vector);
+
+                traversals.r.forEach(r => {
+                    traversals.c.forEach(c => {
+                        if (gridCopy[r][c] !== 0) {
+                            let currR = r;
+                            let currC = c;
+
+                            while (true) {
+                                const nextR = currR + vector.r;
+                                const nextC = currC + vector.c;
+
+                                if (nextR < 0 || nextR >= this.size || nextC < 0 || nextC >= this.size) break;
+
+                                if (gridCopy[nextR][nextC] === 0) {
+                                    gridCopy[nextR][nextC] = gridCopy[currR][currC];
+                                    gridCopy[currR][currC] = 0;
+                                    currR = nextR;
+                                    currC = nextC;
+                                    moved = true;
+                                } else if (gridCopy[nextR][nextC] === gridCopy[currR][currC] && !merged[nextR][nextC]) {
+                                    gridCopy[nextR][nextC] *= 2;
+                                    merged[nextR][nextC] = true;
+                                    gainedScore += gridCopy[nextR][nextC];
+                                    gridCopy[currR][currC] = 0;
+                                    moved = true;
+                                    break;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                });
+
+                return { moved, grid: gridCopy, score: gainedScore };
+            }
+
+            // ==================== 觀戰與排行榜 UI 渲染 ====================
+            renderSpectateList() {
+                const container = document.getElementById('spectate-players-list');
+                const players = Object.values(this.roomPlayers).filter(p => p.id !== (this.socket ? this.socket.id : ''));
+                
+                document.getElementById('spectate-count-badge').textContent = `在線玩家: ${Object.keys(this.roomPlayers).length}`;
+
+                if (players.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-amber-800/50 italic py-2">尚無其他玩家，快點擊上方「複製連結」邀請好友！</div>`;
+                    this.spectateTargetId = null;
+                    this.renderSpectateBoard(null);
+                    return;
+                }
+
+                if (!this.spectateTargetId && players.length > 0) {
+                    this.spectateTargetId = players[0].id;
+                }
+
+                container.innerHTML = players.map(p => {
+                    const isSelected = p.id === this.spectateTargetId;
+                    return `
+                        <button onclick="gameInstance.selectSpectateTarget('${p.id}')" 
+                                class="btn-action flex-shrink-0 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 ${isSelected ? 'bg-indigo-600 text-white border-indigo-700 shadow-md scale-105' : 'bg-amber-100/70 hover:bg-amber-200 text-amber-950 border-amber-300'}">
+                            <i class="fas ${isSelected ? 'fa-eye' : 'fa-user'} text-xs"></i>
+                            <span>${p.name}</span>
+                            <span class="text-[10px] opacity-80 font-normal">(${p.score}分)</span>
+                        </button>
+                    `;
+                }).join('');
+
+                if (this.spectateTargetId && this.roomPlayers[this.spectateTargetId]) {
+                    this.renderSpectateBoard(this.roomPlayers[this.spectateTargetId]);
+                }
+            }
+
+            selectSpectateTarget(playerId) {
+                this.spectateTargetId = playerId;
+                this.renderSpectateList();
+            }
+
+            renderSpectateBoard(player) {
+                const targetName = document.getElementById('spectate-target-name');
+                const targetStatus = document.getElementById('spectate-target-status');
+                const miniGrid = document.getElementById('spectate-mini-grid');
+                const scoreVal = document.getElementById('spectate-score-val');
+                const maxTileVal = document.getElementById('spectate-max-tile-val');
+
+                if (!player || !player.grid) {
+                    targetName.textContent = player ? player.name : '未選取觀戰目標';
+                    targetStatus.textContent = '尚未產生盤面';
+                    miniGrid.style.gridTemplateColumns = `repeat(4, minmax(0, 1fr))`;
+                    miniGrid.innerHTML = `<div class="col-span-4 text-center text-amber-800/50 text-xs py-10 font-bold">等待此玩家進行操作...</div>`;
+                    scoreVal.textContent = player ? player.score : 0;
+                    maxTileVal.textContent = player ? player.maxTile : 0;
+                    return;
+                }
+
+                targetName.textContent = player.name;
+                scoreVal.textContent = player.score;
+                maxTileVal.textContent = player.maxTile || 2;
+
+                if (player.status === 'gameover') {
+                    targetStatus.textContent = '已淘汰 (Game Over)';
+                    targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700';
+                } else if (player.status === 'won') {
+                    targetStatus.textContent = '達成 2048!';
+                    targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700';
+                } else {
+                    targetStatus.textContent = '比賽競技中';
+                    targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-200 text-amber-900';
+                }
+
+                const size = player.grid.length;
+                miniGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+                miniGrid.style.gridTemplateRows = `repeat(${size}, minmax(0, 1fr))`;
+
+                let html = '';
+                for (let r = 0; r < size; r++) {
+                    for (let c = 0; c < size; c++) {
+                        const val = player.grid[r][c];
+                        let colorClass = `tile-${val > 0 ? val : 'bg'}`;
+                        if (val > 16384) colorClass = 'tile-super';
+                        
+                        html += `
+                            <div class="mini-tile ${val > 0 ? colorClass : 'bg-tileBg/40'} text-xs sm:text-sm">
+                                ${val > 0 ? val : ''}
+                            </div>
+                        `;
+                    }
+                }
+                miniGrid.innerHTML = html;
+            }
+
+            renderLeaderboard(list) {
+                const container = document.getElementById('leaderboard-list');
+                if (!list || list.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-amber-800/60 text-center py-6">尚無排名資料</div>`;
+                    return;
+                }
+
+                container.innerHTML = list.map((item, idx) => {
+                    let rankBadge = `<span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-amber-200 text-amber-900">${idx + 1}</span>`;
+                    if (idx === 0) rankBadge = `<span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-yellow-400 text-amber-950 shadow"><i class="fas fa-crown"></i></span>`;
+                    else if (idx === 1) rankBadge = `<span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-slate-300 text-slate-800">2</span>`;
+                    else if (idx === 2) rankBadge = `<span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-amber-600 text-white">3</span>`;
+
+                    const isSelf = this.socket && item.id === this.socket.id;
+
+                    return `
+                        <div class="p-2 rounded-xl flex justify-between items-center text-xs font-bold border transition-all ${isSelf ? 'bg-amber-100 border-amber-400 shadow-sm' : 'bg-amber-50/60 border-amber-200/60'}">
+                            <div class="flex items-center gap-2">
+                                ${rankBadge}
+                                <div>
+                                    <div class="text-amber-950 flex items-center gap-1">
+                                        ${item.name} ${item.isHost ? '<i class="fas fa-star text-yellow-500 text-[10px]" title="房主"></i>' : ''}
+                                    </div>
+                                    <div class="text-[10px] text-amber-700/80 font-normal">最高方塊: ${item.maxTile || 2}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-amber-900 font-extrabold text-sm">${item.score}</div>
+                                <div class="text-[9px] ${item.status === 'gameover' ? 'text-rose-600' : 'text-emerald-600'}">${item.status === 'gameover' ? '淘汰' : '競技中'}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            renderHallOfFame() {
+                const container = document.getElementById('hall-of-fame-list');
+                if (!this.hallOfFameData || this.hallOfFameData.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-amber-800/60 text-center py-6">尚無歷史名人紀錄，快進行一局比賽寫下紀錄！</div>`;
+                    return;
+                }
+
+                container.innerHTML = this.hallOfFameData.map((item, idx) => `
+                    <div class="p-2 rounded-xl flex justify-between items-center text-xs font-bold border bg-amber-50/80 border-amber-200">
+                        <div class="flex items-center gap-2">
+                            <span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-yellow-400 text-amber-950">${idx + 1}</span>
+                            <div>
+                                <div class="text-amber-950 font-extrabold">${item.name}</div>
+                                <div class="text-[9px] text-amber-700/80 font-normal">日期: ${item.date || '歷史'}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-amber-900 font-extrabold text-sm">${item.score} 分</div>
+                            <div class="text-[9px] text-amber-700">最高: ${item.maxTile}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateTimerDisplay(seconds) {
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                document.getElementById('match-timer-display').textContent = `${mins}:${secs}`;
+            }
+
+            showResultsModal(data) {
+                const modal = document.getElementById('match-results-modal');
+                const winnerText = document.getElementById('results-winner-text');
+                const podiumList = document.getElementById('results-podium-list');
+
+                winnerText.innerHTML = `比賽冠軍得主：<span class="text-amber-950 font-extrabold text-lg">${data.winner ? data.winner.name : '無'}</span> (${data.winner ? data.winner.score : 0}分)`;
+
+                podiumList.innerHTML = (data.leaderboard || []).map((item, idx) => `
+                    <div class="flex justify-between items-center py-1.5 border-b border-amber-200 text-xs font-bold text-amber-950">
+                        <div>第 ${idx + 1} 名 - ${item.name}</div>
+                        <div class="text-amber-800">${item.score} 分 (最高: ${item.maxTile})</div>
+                    </div>
+                `).join('');
+
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modal.classList.add('opacity-100');
+            }
+
+            setupInputs() {
+                document.addEventListener('keydown', (e) => {
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                        e.preventDefault();
+                    }
+                    switch (e.key) {
+                        case 'ArrowUp': case 'w': case 'W': this.move(0); break;
+                        case 'ArrowRight': case 'd': case 'D': this.move(1); break;
+                        case 'ArrowDown': case 's': case 'S': this.move(2); break;
+                        case 'ArrowLeft': case 'a': case 'A': this.move(3); break;
+                    }
+                });
+
+                let touchStartX = 0, touchStartY = 0;
+                this.boardContainer.addEventListener('touchstart', (e) => {
+                    if (e.touches.length > 0) {
+                        touchStartX = e.touches[0].clientX;
+                        touchStartY = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+
+                this.boardContainer.addEventListener('touchend', (e) => {
+                    if (!touchStartX || !touchStartY) return;
+                    const dx = e.changedTouches[0].clientX - touchStartX;
+                    const dy = e.changedTouches[0].clientY - touchStartY;
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) > 30) {
+                        if (Math.abs(dx) > Math.abs(dy)) {
+                            if (dx > 0) this.move(1); else this.move(3);
+                        } else {
+                            if (dy > 0) this.move(2); else this.move(0);
+                        }
+                    }
+                    touchStartX = 0; touchStartY = 0;
+                }, { passive: true });
+
+                document.getElementById('restart-btn').addEventListener('click', () => this.restart());
+                document.getElementById('overlay-restart-btn').addEventListener('click', () => this.restart());
+                document.getElementById('undo-btn').addEventListener('click', () => this.undo());
+                document.getElementById('ai-btn').addEventListener('click', () => this.toggleAI());
+                document.getElementById('grid-size-select').addEventListener('change', () => this.restart());
+
+                document.getElementById('sound-btn').addEventListener('click', () => {
+                    this.sound.enabled = !this.sound.enabled;
+                    document.getElementById('sound-icon').className = this.sound.enabled ? 'fas fa-volume-up' : 'fas fa-volume-mute text-gray-400';
+                });
+
+                document.getElementById('keep-going-btn').addEventListener('click', () => {
+                    this.keepPlaying = true;
+                    this.hideOverlay();
+                });
+
+                document.getElementById('btn-up').addEventListener('click', () => this.move(0));
+                document.getElementById('btn-right').addEventListener('click', () => this.move(1));
+                document.getElementById('btn-down').addEventListener('click', () => this.move(2));
+                document.getElementById('btn-left').addEventListener('click', () => this.move(3));
+
+                // 嗆聲選單監聽
+                document.getElementById('quick-taunt-select').addEventListener('change', (e) => {
+                    const text = e.target.value;
+                    if (text) {
+                        this.sendTaunt(text);
+                        e.target.selectedIndex = 0;
+                    }
+                });
+
+                // 右欄分頁切換
+                const tabRoomBtn = document.getElementById('tab-room-rank-btn');
+                const tabHallBtn = document.getElementById('tab-hall-fame-btn');
+                const roomList = document.getElementById('leaderboard-list');
+                const hallList = document.getElementById('hall-of-fame-list');
+
+                tabRoomBtn.addEventListener('click', () => {
+                    tabRoomBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-extrabold transition-all bg-white text-amber-950 shadow-sm';
+                    tabHallBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-extrabold transition-all text-amber-800 hover:text-amber-950';
+                    roomList.classList.remove('hidden');
+                    roomList.classList.add('flex');
+                    hallList.classList.remove('flex');
+                    hallList.classList.add('hidden');
+                });
+
+                tabHallBtn.addEventListener('click', () => {
+                    tabHallBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-extrabold transition-all bg-white text-amber-950 shadow-sm';
+                    tabRoomBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-extrabold transition-all text-amber-800 hover:text-amber-950';
+                    hallList.classList.remove('hidden');
+                    hallList.classList.add('flex');
+                    roomList.classList.remove('flex');
+                    roomList.classList.add('hidden');
+                    this.renderHallOfFame();
+                });
+
+                document.getElementById('copy-room-btn').addEventListener('click', () => {
+                    if (!this.roomId) return;
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?room=${this.roomId}`;
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        alert(`已複製邀請連結到剪貼簿！\n${shareUrl}\n直接傳給朋友點擊即可進入房間！`);
+                    });
+                });
+            }
+
+            setupModals() {
+                const roomModal = document.getElementById('room-modal');
+                const hostModal = document.getElementById('host-settings-modal');
+                const resultsModal = document.getElementById('match-results-modal');
+
+                document.getElementById('open-room-modal-btn').addEventListener('click', () => {
+                    roomModal.classList.remove('opacity-0', 'pointer-events-none');
+                    roomModal.classList.add('opacity-100');
+                });
+
+                document.getElementById('close-room-modal-btn').addEventListener('click', () => {
+                    roomModal.classList.remove('opacity-100');
+                    roomModal.classList.add('opacity-0', 'pointer-events-none');
+                });
+
+                document.getElementById('action-create-room-btn').addEventListener('click', () => {
+                    this.playerName = document.getElementById('nickname-input').value.trim() || '玩家';
+                    localStorage.setItem('2048_player_name', this.playerName);
+                    document.getElementById('player-self-name').textContent = this.playerName;
+
+                    if (this.socket) {
+                        this.socket.emit('create_room', { playerName: this.playerName }, (res) => {
+                            if (res.success) {
+                                roomModal.classList.remove('opacity-100');
+                                roomModal.classList.add('opacity-0', 'pointer-events-none');
+                                alert(`房間創建成功！房間號：${res.roomId}\n快使用右上角「複製連結」邀請朋友對戰！`);
+                            }
+                        });
+                    }
+                });
+
+                document.getElementById('action-join-room-btn').addEventListener('click', () => {
+                    document.getElementById('join-code-container').classList.remove('hidden');
+                });
+
+                document.getElementById('submit-join-room-btn').addEventListener('click', () => {
+                    const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+                    if (!code) { alert('請輸入房間號！'); return; }
+                    this.joinRoom(code);
+                });
+
+                document.getElementById('host-settings-btn').addEventListener('click', () => {
+                    hostModal.classList.remove('opacity-0', 'pointer-events-none');
+                    hostModal.classList.add('opacity-100');
+                });
+
+                document.getElementById('close-host-modal-btn').addEventListener('click', () => {
+                    hostModal.classList.remove('opacity-100');
+                    hostModal.classList.add('opacity-0', 'pointer-events-none');
+                });
+
+                document.getElementById('save-host-settings-btn').addEventListener('click', () => {
+                    const duration = document.getElementById('modal-duration-select').value;
+                    const maxPlayers = document.getElementById('modal-max-players-select').value;
+                    
+                    if (this.socket && this.roomId && this.isHost) {
+                        this.socket.emit('host_update_settings', { duration, maxPlayers });
+                    }
+                    hostModal.classList.remove('opacity-100');
+                    hostModal.classList.add('opacity-0', 'pointer-events-none');
+                    alert('房間設定已更新！');
+                });
+
+                document.getElementById('start-match-btn').addEventListener('click', () => {
+                    if (this.socket && this.roomId && this.isHost) {
+                        this.socket.emit('host_start_game');
+                    }
+                });
+
+                document.getElementById('close-results-modal-btn').addEventListener('click', () => {
+                    resultsModal.classList.remove('opacity-100');
+                    resultsModal.classList.add('opacity-0', 'pointer-events-none');
+                });
+            }
+
+            joinRoom(code) {
+                this.playerName = document.getElementById('nickname-input').value.trim() || '玩家';
+                localStorage.setItem('2048_player_name', this.playerName);
+                document.getElementById('player-self-name').textContent = this.playerName;
+
+                if (this.socket) {
+                    this.socket.emit('join_room', { roomId: code, playerName: this.playerName }, (res) => {
+                        if (res.success) {
+                            document.getElementById('room-modal').classList.remove('opacity-100');
+                            document.getElementById('room-modal').classList.add('opacity-0', 'pointer-events-none');
+                            alert(`成功加入房間 ${code}！`);
+                        } else {
+                            alert(res.message || '加入失敗');
+                        }
+                    });
+                }
+            }
+        }
+
+        let gameInstance;
+        window.onload = function() {
+            gameInstance = new Game2048();
+        };
+    </script>
+</body>
+</html>
