@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>2048 線上多人對戰 (GitHub 0延遲 P2P 雲端版)</title>
+    <!-- 網頁標籤頁圖示 (Favicon) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23edc22e'/><text x='50' y='64' font-size='36' font-weight='900' font-family='sans-serif' fill='%23ffffff' text-anchor='middle'>2048</text></svg>">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -647,7 +649,7 @@
                 if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
                 this.heartbeatTimer = setInterval(() => {
                     if (this.peer) this.broadcastP2PState();
-                }, 400); // 400ms High-frequency 0ms sync
+                }, 400);
             }
 
             handlePeerConnection(conn) {
@@ -684,7 +686,6 @@
                     this.updateRoomStateDisplay();
 
                     if (this.isHost && data.playerData) {
-                        // Host re-broadcasts to all other peers immediately!
                         Object.values(this.connections).forEach(otherConn => {
                             if (otherConn.peer !== conn.peer && otherConn.open) {
                                 otherConn.send({ type: 'STATE_UPDATE', playerData: data.playerData, fullRoomState: this.roomPlayers });
