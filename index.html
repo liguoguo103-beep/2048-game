@@ -12,8 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
-    <!-- Google Identity Services SDK -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- PeerJS for WebRTC P2P Multiplayer -->
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     
@@ -216,7 +214,7 @@
                     ✨ 歡迎來到 2048 線上遊戲大廳
                 </div>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-amber-200">隨時隨地，與好友即時對戰</h2>
-                <p class="text-amber-100/80 text-xs sm:text-sm max-w-md">登入 Google 帳號即可記錄您的最高得分與對戰紀錄。創建房間發送連結，即可邀請好友進行即時對戰、觀戰與房間聊天！</p>
+                <p class="text-amber-100/80 text-xs sm:text-sm max-w-md">設定 Google 帳號即可記錄您的最高得分與對戰紀錄。創建房間發送連結，即可邀請好友進行即時對戰、觀戰與房間聊天！</p>
             </div>
 
             <!-- 主頁登入與卡片按鈕 -->
@@ -470,7 +468,7 @@
                 </div>
             </div>
 
-            <!-- 全新房間即時聊天室區塊 -->
+            <!-- 房間即時聊天室區塊 -->
             <div class="border-t border-amber-200/80 pt-2.5 flex-1 flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-1.5">
                     <div class="flex items-center gap-1.5">
@@ -498,7 +496,38 @@
         </section>
     </div>
 
-    <!-- ==================== Modal 1: 創建/加入房間彈窗 ==================== -->
+    <!-- ==================== Modal 1: Google 帳號登入彈窗 ==================== -->
+    <div id="google-modal" class="fixed inset-0 bg-amber-950/70 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-300 relative text-center">
+            <button id="close-google-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-amber-900 text-xl font-bold p-2">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 font-bold shadow-inner">
+                <i class="fab fa-google"></i>
+            </div>
+            <h3 class="text-2xl font-extrabold text-gray-900">Google 帳戶登入</h3>
+            <p class="text-xs text-gray-500 mt-1 mb-4">請輸入您的 Google 暱稱與 Email 以設定玩家個人身分</p>
+
+            <div class="space-y-3 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Google Email：</label>
+                    <input type="email" id="google-email-input" class="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-3.5 py-2.5 text-gray-900 font-bold text-xs focus:outline-none focus:border-red-500" placeholder="例如: user@gmail.com">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Google 顯示暱稱：</label>
+                    <input type="text" id="google-name-input" class="w-full bg-gray-50 border-2 border-gray-200 rounded-xl px-3.5 py-2.5 text-gray-900 font-bold text-sm focus:outline-none focus:border-red-500" placeholder="請輸入您的顯示暱稱..." maxlength="12">
+                </div>
+
+                <button id="submit-google-login-btn" class="w-full btn-action bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-2 mt-2">
+                    <i class="fab fa-google"></i> 確定使用此 Google 帳號登入
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== Modal 2: 創建/加入房間彈窗 ==================== -->
     <div id="room-modal" class="fixed inset-0 bg-amber-950/70 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-300 relative">
             <button id="close-room-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-amber-900 text-xl font-bold p-2">
@@ -632,8 +661,8 @@
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
-                osc.frequency.exponentialRampToValueAtTime(659.25, this.ctx.currentTime + 0.1); // E5
+                osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(659.25, this.ctx.currentTime + 0.1);
                 gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
                 osc.connect(gain);
@@ -688,9 +717,9 @@
                 this.myPeerId = null;
                 this.roomId = null;
                 this.isHost = false;
-                this.connections = {}; // { peerId: DataConnection }
+                this.connections = {};
                 this.spectateTargetId = null;
-                this.roomPlayers = {}; // { peerId: playerState }
+                this.roomPlayers = {};
                 this.heartbeatTimer = null;
 
                 // 隨機強大自動命名系統 (優先使用 Google 暱稱)
@@ -714,56 +743,50 @@
             initAuth() {
                 this.updateAuthUI();
 
-                // Google Sign-In SDK Initialization
-                window.handleGoogleCredentialResponse = (response) => {
-                    try {
-                        const payload = this.parseJwt(response.credential);
-                        if (payload) {
-                            this.currentUser = {
-                                name: payload.name,
-                                email: payload.email,
-                                picture: payload.picture
-                            };
-                            localStorage.setItem('2048_google_user', JSON.stringify(this.currentUser));
-                            this.playerName = payload.name;
-                            localStorage.setItem('2048_player_name', this.playerName);
-                            this.updateAuthUI();
-                            alert(`登入成功！歡迎，${payload.name}`);
-                        }
-                    } catch(e) {
-                        console.error('Google Auth Error:', e);
-                    }
-                };
-
+                const googleModal = document.getElementById('google-modal');
                 const googleBtn = document.getElementById('google-login-btn');
                 const portalGoogleBtn = document.getElementById('portal-google-btn');
                 const logoutBtn = document.getElementById('user-logout-btn');
+                const closeGoogleModalBtn = document.getElementById('close-google-modal-btn');
+                const submitGoogleLoginBtn = document.getElementById('submit-google-login-btn');
 
-                const triggerGoogleAuth = () => {
-                    if (window.google && window.google.accounts) {
-                        window.google.accounts.id.initialize({
-                            client_id: "9283749283-demo.apps.googleusercontent.com",
-                            callback: window.handleGoogleCredentialResponse
-                        });
-                        window.google.accounts.id.prompt();
-                    } else {
-                        const demoName = prompt("請輸入您的 Google 暱稱進行快速登入：", "Google玩家_" + Math.floor(Math.random()*90+10));
-                        if (demoName) {
-                            this.currentUser = {
-                                name: demoName,
-                                email: `${demoName}@gmail.com`,
-                                picture: `https://api.dicebear.com/7.x/bottts/svg?seed=${demoName}`
-                            };
-                            localStorage.setItem('2048_google_user', JSON.stringify(this.currentUser));
-                            this.playerName = demoName;
-                            localStorage.setItem('2048_player_name', this.playerName);
-                            this.updateAuthUI();
-                        }
-                    }
+                const openGoogleModal = () => {
+                    document.getElementById('google-email-input').value = '';
+                    document.getElementById('google-name-input').value = '';
+                    googleModal.classList.remove('opacity-0', 'pointer-events-none');
+                    googleModal.classList.add('opacity-100');
                 };
 
-                if (googleBtn) googleBtn.addEventListener('click', triggerGoogleAuth);
-                if (portalGoogleBtn) portalGoogleBtn.addEventListener('click', triggerGoogleAuth);
+                const closeGoogleModal = () => {
+                    googleModal.classList.remove('opacity-100');
+                    googleModal.classList.add('opacity-0', 'pointer-events-none');
+                };
+
+                if (googleBtn) googleBtn.addEventListener('click', openGoogleModal);
+                if (portalGoogleBtn) portalGoogleBtn.addEventListener('click', openGoogleModal);
+                if (closeGoogleModalBtn) closeGoogleModalBtn.addEventListener('click', closeGoogleModal);
+
+                if (submitGoogleLoginBtn) {
+                    submitGoogleLoginBtn.addEventListener('click', () => {
+                        const emailInput = document.getElementById('google-email-input').value.trim();
+                        const nameInput = document.getElementById('google-name-input').value.trim();
+                        
+                        const email = emailInput || 'user@gmail.com';
+                        const name = nameInput || this.generateSmartName();
+                        
+                        this.currentUser = {
+                            name: name,
+                            email: email,
+                            picture: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`
+                        };
+                        localStorage.setItem('2048_google_user', JSON.stringify(this.currentUser));
+                        this.playerName = name;
+                        localStorage.setItem('2048_player_name', this.playerName);
+                        this.updateAuthUI();
+                        closeGoogleModal();
+                    });
+                }
+
                 if (logoutBtn) logoutBtn.addEventListener('click', () => {
                     this.currentUser = null;
                     localStorage.removeItem('2048_google_user');
@@ -771,13 +794,6 @@
                     localStorage.setItem('2048_player_name', this.playerName);
                     this.updateAuthUI();
                 });
-            }
-
-            parseJwt(token) {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-                return JSON.parse(jsonPayload);
             }
 
             updateAuthUI() {
