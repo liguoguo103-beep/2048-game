@@ -11,7 +11,7 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
     <!-- PeerJS for WebRTC P2P Multiplayer -->
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     
@@ -50,7 +50,7 @@
         .tile-wrapper {
             position: absolute;
             transition: top 120ms ease-in-out, left 120ms ease-in-out;
-            padding: 3px;
+            padding: 4px;
             box-sizing: border-box;
             will-change: top, left;
             z-index: 10;
@@ -59,12 +59,12 @@
         .tile-inner {
             width: 100%;
             height: 100%;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: 800;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
             transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
         }
 
@@ -91,7 +91,7 @@
             position: absolute;
             font-weight: 800;
             color: #8f7a66;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             animation: floatUp 600ms ease-out forwards;
             pointer-events: none;
             z-index: 30;
@@ -99,12 +99,12 @@
 
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-28px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-32px) scale(1.25); }
         }
 
         .floating-emoji {
             position: fixed;
-            font-size: 2.5rem;
+            font-size: 3rem;
             pointer-events: none;
             z-index: 100;
             animation: floatEmoji 2.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
@@ -127,21 +127,31 @@
             100% { transform: scale(1); }
         }
 
-        .tile-2 { background-color: #eee4da; color: #776e65; font-size: 2rem; }
-        .tile-4 { background-color: #ede0c8; color: #776e65; font-size: 2rem; }
-        .tile-8 { background-color: #f2b179; color: #f9f6f2; font-size: 2rem; }
-        .tile-16 { background-color: #f59563; color: #f9f6f2; font-size: 1.75rem; }
-        .tile-32 { background-color: #f67c5f; color: #f9f6f2; font-size: 1.75rem; }
-        .tile-64 { background-color: #f65e3b; color: #f9f6f2; font-size: 1.75rem; }
-        .tile-128 { background-color: #edcf72; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 12px 2px rgba(237, 207, 114, 0.4); }
-        .tile-256 { background-color: #edcc61; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 15px 3px rgba(237, 204, 97, 0.5); }
-        .tile-512 { background-color: #edc850; color: #f9f6f2; font-size: 1.5rem; box-shadow: 0 0 18px 4px rgba(237, 200, 80, 0.6); }
-        .tile-1024 { background-color: #edc53f; color: #f9f6f2; font-size: 1.25rem; box-shadow: 0 0 22px 5px rgba(237, 197, 63, 0.7); }
-        .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: 1.25rem; box-shadow: 0 0 30px 8px rgba(237, 194, 46, 0.85); }
-        .tile-4096 { background-color: #a040fb; color: #f9f6f2; font-size: 1.25rem; box-shadow: 0 0 30px 8px rgba(160, 64, 251, 0.85); }
-        .tile-8192 { background-color: #f5222d; color: #f9f6f2; font-size: 1.25rem; box-shadow: 0 0 30px 8px rgba(245, 34, 45, 0.85); }
-        .tile-16384 { background-color: #13c2c2; color: #f9f6f2; font-size: 1rem; box-shadow: 0 0 30px 8px rgba(19, 194, 194, 0.85); }
-        .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: 1rem; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        /* 棋盤數字字型大小優化 (大幅放大) */
+        .tile-2 { background-color: #eee4da; color: #776e65; font-size: 2.75rem; }
+        .tile-4 { background-color: #ede0c8; color: #776e65; font-size: 2.75rem; }
+        .tile-8 { background-color: #f2b179; color: #f9f6f2; font-size: 2.75rem; }
+        .tile-16 { background-color: #f59563; color: #f9f6f2; font-size: 2.35rem; }
+        .tile-32 { background-color: #f67c5f; color: #f9f6f2; font-size: 2.35rem; }
+        .tile-64 { background-color: #f65e3b; color: #f9f6f2; font-size: 2.35rem; }
+        .tile-128 { background-color: #edcf72; color: #f9f6f2; font-size: 2rem; box-shadow: 0 0 15px 3px rgba(237, 207, 114, 0.45); }
+        .tile-256 { background-color: #edcc61; color: #f9f6f2; font-size: 2rem; box-shadow: 0 0 18px 4px rgba(237, 204, 97, 0.55); }
+        .tile-512 { background-color: #edc850; color: #f9f6f2; font-size: 2rem; box-shadow: 0 0 22px 5px rgba(237, 200, 80, 0.65); }
+        .tile-1024 { background-color: #edc53f; color: #f9f6f2; font-size: 1.65rem; box-shadow: 0 0 26px 6px rgba(237, 197, 63, 0.75); }
+        .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: 1.65rem; box-shadow: 0 0 34px 9px rgba(237, 194, 46, 0.9); }
+        .tile-4096 { background-color: #a040fb; color: #f9f6f2; font-size: 1.65rem; box-shadow: 0 0 34px 9px rgba(160, 64, 251, 0.9); }
+        .tile-8192 { background-color: #f5222d; color: #f9f6f2; font-size: 1.65rem; box-shadow: 0 0 34px 9px rgba(245, 34, 45, 0.9); }
+        .tile-16384 { background-color: #13c2c2; color: #f9f6f2; font-size: 1.35rem; box-shadow: 0 0 34px 9px rgba(19, 194, 194, 0.9); }
+        .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: 1.35rem; box-shadow: 0 0 25px rgba(0,0,0,0.5); }
+
+        /* 手機/小螢幕調適字型 */
+        @media (max-width: 640px) {
+            .tile-2, .tile-4, .tile-8 { font-size: 2rem; }
+            .tile-16, .tile-32, .tile-64 { font-size: 1.75rem; }
+            .tile-128, .tile-256, .tile-512 { font-size: 1.5rem; }
+            .tile-1024, .tile-2048, .tile-4096, .tile-8192 { font-size: 1.25rem; }
+            .tile-16384, .tile-super { font-size: 1rem; }
+        }
 
         .mini-tile {
             display: flex;
@@ -157,31 +167,34 @@
             cursor: pointer;
             touch-action: manipulation;
         }
+        .btn-action:hover {
+            transform: translateY(-1px);
+        }
         .btn-action:active {
-            transform: scale(0.92);
+            transform: scale(0.94);
         }
 
         .backdrop-blur-custom {
-            backdrop-filter: blur(6px);
+            backdrop-filter: blur(8px);
         }
     </style>
 </head>
-<body class="min-h-screen bg-amber-50/50 flex flex-col justify-between p-2 sm:p-4 select-none">
+<body class="min-h-screen bg-amber-50/60 flex flex-col justify-between p-3 sm:p-5 select-none">
 
-    <!-- 全局頂部導覽列 -->
-    <header class="w-full bg-amber-900 text-white rounded-2xl px-4 py-3 shadow-md mb-3 flex flex-wrap justify-between items-center gap-3">
-        <div class="flex items-center gap-3">
-            <button id="nav-home-btn" class="btn-action flex items-center gap-2 hover:opacity-90">
-                <span class="text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-300">2048</span>
-                <span class="text-xs bg-amber-700 text-amber-100 px-2.5 py-1 rounded-full font-bold border border-amber-600">
-                    <i class="fas fa-home mr-1"></i> 大廳主頁
+    <!-- 全局頂部導覽列 (大氣寬闊設計) -->
+    <header class="w-full max-w-7xl mx-auto bg-gradient-to-r from-amber-900 via-amber-800 to-amber-950 text-white rounded-3xl px-5 py-3.5 shadow-lg mb-4 flex flex-wrap justify-between items-center gap-4 border border-amber-700/60">
+        <div class="flex items-center gap-4">
+            <button id="nav-home-btn" class="btn-action flex items-center gap-3 hover:opacity-90">
+                <span class="text-3xl sm:text-4xl font-black tracking-wider text-amber-300 drop-shadow">2048</span>
+                <span class="text-xs sm:text-sm bg-amber-700/80 hover:bg-amber-700 text-amber-100 px-3 py-1.5 rounded-2xl font-bold border border-amber-500/60 flex items-center gap-1.5 shadow-sm">
+                    <i class="fas fa-home"></i> 大廳主頁
                 </span>
             </button>
 
-            <div id="room-badge" class="hidden items-center bg-amber-800/80 border border-amber-600 px-3 py-1 rounded-xl text-xs">
-                <span class="text-amber-300 font-bold mr-1.5">房間號:</span>
-                <span id="room-code-display" class="font-extrabold tracking-widest text-white mr-2">-----</span>
-                <button id="copy-room-btn" class="btn-action hover:text-amber-300 text-amber-200 font-bold" title="複製邀請連結">
+            <div id="room-badge" class="hidden items-center bg-amber-950/80 border-2 border-amber-500/80 px-4 py-1.5 rounded-2xl text-xs sm:text-sm shadow-inner">
+                <span class="text-amber-300 font-bold mr-2">房間號:</span>
+                <span id="room-code-display" class="font-extrabold tracking-widest text-white text-base mr-3">-----</span>
+                <button id="copy-room-btn" class="btn-action bg-amber-600 hover:bg-amber-500 text-white font-extrabold px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
                     <i class="fas fa-copy"></i> 複製連結
                 </button>
             </div>
@@ -189,150 +202,152 @@
 
         <!-- 右側 Google 登入 / 用戶個人資訊卡片 -->
         <div class="flex items-center gap-3">
-            <div id="user-profile-bar" class="flex items-center gap-2.5 bg-amber-950/60 border border-amber-700/80 px-3 py-1.5 rounded-xl">
-                <img id="user-avatar-img" class="w-8 h-8 rounded-full border-2 border-amber-400 object-cover" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="User Avatar">
+            <div id="user-profile-bar" class="flex items-center gap-3 bg-amber-950/70 border border-amber-700/90 px-4 py-2 rounded-2xl shadow-md">
+                <img id="user-avatar-img" class="w-9 h-9 rounded-full border-2 border-amber-400 object-cover shadow" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="User Avatar">
                 <div class="flex flex-col text-left">
-                    <span id="user-display-name" class="text-xs font-extrabold text-white truncate max-w-[100px]">訪客玩家</span>
-                    <span id="user-login-status" class="text-[9px] font-bold text-amber-300">未登入</span>
+                    <span id="user-display-name" class="text-xs sm:text-sm font-extrabold text-white truncate max-w-[120px]">訪客玩家</span>
+                    <span id="user-login-status" class="text-[10px] font-bold text-amber-300">未登入</span>
                 </div>
-                <button id="google-login-btn" class="btn-action bg-white hover:bg-gray-100 text-gray-800 font-bold text-xs px-2.5 py-1 rounded-lg border flex items-center gap-1.5 shadow-sm ml-1">
-                    <i class="fab fa-google text-red-500"></i> Google 登入
+                <button id="google-login-btn" class="btn-action bg-white hover:bg-gray-100 text-gray-900 font-extrabold text-xs px-3 py-1.5 rounded-xl border border-gray-200 flex items-center gap-1.5 shadow ml-2">
+                    <i class="fab fa-google text-red-500 text-sm"></i> Google 登入
                 </button>
-                <button id="user-logout-btn" class="hidden btn-action text-amber-300 hover:text-white font-bold text-xs p-1 ml-1" title="登出">
+                <button id="user-logout-btn" class="hidden btn-action text-amber-300 hover:text-white font-extrabold text-sm p-1 ml-1" title="登出">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- ==================== View 1: 遊戲大廳主頁 Portal ==================== -->
-    <main id="portal-view" class="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center gap-6 py-4">
+    <!-- ==================== View 1: 遊戲大廳主頁 Portal (充實大氣寬幅) ==================== -->
+    <main id="portal-view" class="w-full max-w-7xl mx-auto flex-1 flex flex-col justify-center items-center gap-8 py-6">
         <!-- 歡迎視覺面板 -->
-        <div class="w-full bg-gradient-to-r from-amber-800 via-amber-900 to-amber-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-700 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="space-y-2 text-center md:text-left">
-                <div class="inline-block bg-yellow-500/20 border border-yellow-400/40 text-yellow-300 text-xs font-extrabold px-3 py-1 rounded-full">
-                    ✨ 歡迎來到 2048 線上遊戲大廳
+        <div class="w-full bg-gradient-to-r from-amber-800 via-amber-900 to-amber-950 text-white rounded-3xl p-8 sm:p-10 shadow-2xl border-2 border-amber-600 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="space-y-3 text-center md:text-left">
+                <div class="inline-block bg-yellow-500/20 border border-yellow-400/40 text-yellow-300 text-xs sm:text-sm font-extrabold px-4 py-1.5 rounded-full">
+                    ✨ 歡迎來到 2048 線上多人遊戲大廳
                 </div>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-amber-200">隨時隨地，與好友即時對戰</h2>
-                <p class="text-amber-100/80 text-xs sm:text-sm max-w-md">設定 Google 帳號即可記錄您的最高得分與對戰紀錄。創建房間發送連結，即可邀請好友進行即時對戰、觀戰與房間聊天！</p>
+                <h2 class="text-3xl sm:text-5xl font-black text-amber-200 leading-tight">隨時隨地，與好友即時對戰</h2>
+                <p class="text-amber-100/90 text-sm sm:text-base max-w-xl leading-relaxed">綁定個人身分即可累積個人最高紀錄。創建房間複製專屬邀請網址，即刻體驗多人同步連線對戰、即時觀戰與專屬聊天室！</p>
             </div>
 
             <!-- 主頁登入與卡片按鈕 -->
-            <div class="bg-amber-950/70 border border-amber-700 p-4 rounded-2xl flex flex-col items-center gap-3 w-full md:w-64 text-center">
-                <img id="portal-user-avatar" class="w-16 h-16 rounded-full border-4 border-amber-400 shadow-md" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="Avatar">
+            <div class="bg-amber-950/80 border-2 border-amber-600/80 p-5 rounded-3xl flex flex-col items-center gap-3.5 w-full md:w-72 text-center shadow-xl">
+                <img id="portal-user-avatar" class="w-20 h-20 rounded-full border-4 border-amber-400 shadow-lg object-cover" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="Avatar">
                 <div>
-                    <h4 id="portal-user-name" class="font-extrabold text-amber-200 text-base">訪客玩家</h4>
-                    <p id="portal-user-desc" class="text-xs text-amber-400/80">未登入帳號</p>
+                    <h4 id="portal-user-name" class="font-extrabold text-amber-200 text-lg">訪客玩家</h4>
+                    <p id="portal-user-desc" class="text-xs text-amber-400/90 font-medium">未登入帳號</p>
                 </div>
-                <button id="portal-google-btn" class="w-full btn-action bg-white hover:bg-gray-100 text-gray-900 font-extrabold text-xs py-2.5 rounded-xl shadow flex items-center justify-center gap-2">
-                    <i class="fab fa-google text-red-500 text-sm"></i> 使用 Google 帳號登入
+                <button id="portal-google-btn" class="w-full btn-action bg-white hover:bg-gray-100 text-gray-900 font-extrabold text-xs py-3 rounded-2xl shadow flex items-center justify-center gap-2">
+                    <i class="fab fa-google text-red-500 text-base"></i> 使用 Google 帳號登入
                 </button>
             </div>
         </div>
 
-        <!-- 模式選擇 3 大卡片 -->
-        <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- 模式選擇 3 大卡片 (大尺寸與飽滿間距) -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- 卡片 1: 多人即時對戰 -->
-            <div class="bg-white/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div class="bg-white/95 border-2 border-amber-300 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all flex flex-col justify-between group">
                 <div>
-                    <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center text-2xl font-bold mb-3">
+                    <div class="w-14 h-14 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center text-3xl font-extrabold mb-4 shadow-inner group-hover:scale-110 transition-transform">
                         <i class="fas fa-users"></i>
                     </div>
-                    <h3 class="text-xl font-extrabold text-amber-950 mb-1">多人線上對戰</h3>
-                    <p class="text-xs text-amber-700 leading-relaxed mb-4">創建或加入房間，透過房間連結邀請好友進行多人即時對戰、觀戰與房間聊天。</p>
+                    <h3 class="text-2xl font-black text-amber-950 mb-2">多人線上對戰</h3>
+                    <p class="text-xs sm:text-sm text-amber-800 leading-relaxed mb-6">創建或加入專屬對戰房間，透過邀請網址快速連線，享有無延遲對戰、觀戰與房間聊天。</p>
                 </div>
-                <button id="portal-create-room-btn" class="w-full btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold py-3 rounded-2xl text-xs shadow flex items-center justify-center gap-2">
+                <button id="portal-create-room-btn" class="w-full btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold py-3.5 rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2">
                     <i class="fas fa-plus-circle"></i> 創建 / 加入對戰房間
                 </button>
             </div>
 
             <!-- 卡片 2: 單人經典練習 -->
-            <div class="bg-white/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div class="bg-white/95 border-2 border-amber-300 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all flex flex-col justify-between group">
                 <div>
-                    <div class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-2xl flex items-center justify-center text-2xl font-bold mb-3">
+                    <div class="w-14 h-14 bg-indigo-100 text-indigo-700 rounded-2xl flex items-center justify-center text-3xl font-extrabold mb-4 shadow-inner group-hover:scale-110 transition-transform">
                         <i class="fas fa-gamepad"></i>
                     </div>
-                    <h3 class="text-xl font-extrabold text-amber-950 mb-1">單人經典模式</h3>
-                    <p class="text-xs text-amber-700 leading-relaxed mb-4">選擇 3x3 到 6x6 多種棋盤規格，支援無限復原與個人最高分挑戰。</p>
+                    <h3 class="text-2xl font-black text-amber-950 mb-2">單人經典模式</h3>
+                    <p class="text-xs sm:text-sm text-amber-800 leading-relaxed mb-6">自由選擇 3x3 到 6x6 多種棋盤規格，支援無限復原與個人最高分極限挑戰。</p>
                 </div>
-                <button id="portal-single-btn" class="w-full btn-action bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 rounded-2xl text-xs shadow flex items-center justify-center gap-2">
+                <button id="portal-single-btn" class="w-full btn-action bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2">
                     <i class="fas fa-play"></i> 開始單人模式
                 </button>
             </div>
 
             <!-- 卡片 3: 個人戰績卡 -->
-            <div class="bg-white/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div class="bg-white/95 border-2 border-amber-300 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all flex flex-col justify-between group">
                 <div>
-                    <div class="w-12 h-12 bg-yellow-100 text-yellow-700 rounded-2xl flex items-center justify-center text-2xl font-bold mb-3">
+                    <div class="w-14 h-14 bg-yellow-100 text-yellow-700 rounded-2xl flex items-center justify-center text-3xl font-extrabold mb-4 shadow-inner group-hover:scale-110 transition-transform">
                         <i class="fas fa-trophy"></i>
                     </div>
-                    <h3 class="text-xl font-extrabold text-amber-950 mb-1">個人最高紀錄</h3>
-                    <div class="space-y-2 my-3 text-xs font-bold text-amber-900">
-                        <div class="flex justify-between bg-amber-50 p-2 rounded-xl">
+                    <h3 class="text-2xl font-black text-amber-950 mb-2">個人最高紀錄</h3>
+                    <div class="space-y-2.5 my-4 text-xs sm:text-sm font-bold text-amber-900">
+                        <div class="flex justify-between bg-amber-50 p-3 rounded-2xl border border-amber-200/70">
                             <span>最高得分：</span>
-                            <span id="portal-stat-score" class="text-amber-950 font-extrabold">0</span>
+                            <span id="portal-stat-score" class="text-amber-950 font-black text-base">0</span>
                         </div>
-                        <div class="flex justify-between bg-amber-50 p-2 rounded-xl">
+                        <div class="flex justify-between bg-amber-50 p-3 rounded-2xl border border-amber-200/70">
                             <span>最高數字方塊：</span>
-                            <span id="portal-stat-tile" class="text-amber-950 font-extrabold">2</span>
+                            <span id="portal-stat-tile" class="text-amber-950 font-black text-base">2</span>
                         </div>
                     </div>
                 </div>
-                <button id="portal-reset-stat-btn" class="w-full btn-action bg-amber-200 hover:bg-amber-300 text-amber-900 font-extrabold py-2.5 rounded-2xl text-xs">
+                <button id="portal-reset-stat-btn" class="w-full btn-action bg-amber-200 hover:bg-amber-300 text-amber-900 font-extrabold py-3 rounded-2xl text-xs sm:text-sm border border-amber-300">
                     重置本地紀錄
                 </button>
             </div>
         </div>
     </main>
 
-    <!-- ==================== View 2: 主要遊戲戰場 (點選模式後顯示) ==================== -->
-    <div id="game-view" class="hidden w-full grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 items-start">
+    <!-- ==================== View 2: 主要遊戲戰場 (大氣黃金比例排版) ==================== -->
+    <div id="game-view" class="hidden w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1 items-stretch">
         
-        <!-- ==================== 左欄：即時觀戰 Panel (4 Cols) ==================== -->
-        <section class="lg:col-span-4 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[380px] lg:min-h-[480px]">
-            <div class="flex justify-between items-center pb-2.5 border-b border-amber-100 mb-3">
-                <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <h2 class="font-extrabold text-amber-900 text-base">即時觀戰</h2>
-                </div>
-                <span id="spectate-count-badge" class="text-[11px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
-                    在線玩家: 1
-                </span>
-            </div>
-
-            <!-- 左右箭頭觀戰切換組件 -->
-            <div class="mb-3">
-                <div class="text-xs font-bold text-amber-700/80 mb-1.5 text-center">切換觀看玩家：</div>
-                <div class="flex items-center justify-between gap-2 bg-amber-100/60 border border-amber-300 rounded-2xl p-1.5 shadow-sm">
-                    <button id="spectate-prev-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    
-                    <div class="flex-1 bg-white border border-amber-200 rounded-xl py-1 px-2 text-center shadow-inner overflow-hidden">
-                        <div id="spectate-target-name" class="font-extrabold text-sm text-amber-950 truncate">未選取觀戰目標</div>
-                        <div class="text-[10px] font-bold text-amber-700 flex justify-center gap-2 mt-0.5">
-                            <span>得分: <span id="spectate-score-val" class="text-amber-950 font-extrabold">0</span></span>
-                            <span>| 最高: <span id="spectate-max-tile-val" class="text-amber-950 font-extrabold">0</span></span>
+        <!-- ==================== 左欄：即時觀戰 Panel (3 Cols) ==================== -->
+        <section class="lg:col-span-3 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-5 shadow-lg flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-center pb-3 border-b border-amber-100 mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-extrabold text-base shadow-sm">
+                            <i class="fas fa-eye"></i>
                         </div>
+                        <h2 class="font-black text-amber-950 text-lg">即時觀戰</h2>
                     </div>
+                    <span id="spectate-count-badge" class="text-xs bg-indigo-50 text-indigo-700 font-bold px-2.5 py-1 rounded-full border border-indigo-200">
+                        在線玩家: 1
+                    </span>
+                </div>
 
-                    <button id="spectate-next-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                <!-- 左右箭頭觀戰切換組件 -->
+                <div class="mb-4">
+                    <div class="text-xs font-bold text-amber-800/80 mb-2 text-center">切換觀看玩家：</div>
+                    <div class="flex items-center justify-between gap-2 bg-amber-100/70 border border-amber-300 rounded-2xl p-2 shadow-inner">
+                        <button id="spectate-prev-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        
+                        <div class="flex-1 bg-white border border-amber-200 rounded-xl py-1.5 px-2 text-center shadow-inner overflow-hidden">
+                            <div id="spectate-target-name" class="font-black text-sm text-amber-950 truncate">未選取觀戰目標</div>
+                            <div class="text-[11px] font-bold text-amber-700 flex justify-center gap-2 mt-0.5">
+                                <span>得分: <span id="spectate-score-val" class="text-amber-950 font-black">0</span></span>
+                                <span>| 最高: <span id="spectate-max-tile-val" class="text-amber-950 font-black">0</span></span>
+                            </div>
+                        </div>
+
+                        <button id="spectate-next-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- 即時觀戰主棋盤畫面 -->
-            <div class="flex-1 flex flex-col items-center justify-center bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 relative min-h-[220px]">
-                <div id="spectate-target-status" class="mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-amber-200 text-amber-900">
+            <!-- 即時觀戰主棋盤畫面 (擴大比例) -->
+            <div class="flex-1 flex flex-col items-center justify-center bg-amber-50/80 border-2 border-amber-200/80 rounded-2xl p-4 relative min-h-[260px]">
+                <div id="spectate-target-status" class="mb-3 text-xs font-extrabold px-3.5 py-1 rounded-full bg-amber-200 text-amber-900 shadow-sm">
                     等待連線中
                 </div>
 
-                <div class="w-full max-w-[240px] aspect-square bg-board rounded-xl p-2 shadow-inner flex items-center justify-center relative" id="spectate-grid-container">
+                <div class="w-full max-w-[260px] aspect-square bg-board rounded-2xl p-2.5 shadow-inner flex items-center justify-center relative" id="spectate-grid-container">
                     <div id="spectate-mini-grid" class="w-full h-full grid gap-1.5">
-                        <div class="text-center text-amber-100 text-xs flex items-center justify-center h-full font-medium">
+                        <div class="text-center text-amber-100 text-xs flex items-center justify-center h-full font-bold">
                             點擊左右箭頭切換觀戰玩家
                         </div>
                     </div>
@@ -340,16 +355,16 @@
             </div>
         </section>
 
-        <!-- ==================== 中欄：個人遊戲主戰場 (5 Cols) ==================== -->
-        <section class="lg:col-span-5 flex flex-col items-center justify-start">
+        <!-- ==================== 中欄：個人遊戲主戰場 (6 Cols, 巨幅 2048 棋盤) ==================== -->
+        <section class="lg:col-span-6 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-6 shadow-lg flex flex-col items-center justify-between">
             
             <!-- 互動嗆聲與表情浮動吧 -->
-            <div class="w-full max-w-md bg-amber-100/90 border border-amber-300 rounded-2xl p-2 mb-2 shadow-sm flex flex-col gap-1.5">
+            <div class="w-full bg-amber-100/90 border-2 border-amber-300/80 rounded-2xl p-2.5 mb-3 shadow-sm flex flex-col gap-2">
                 <div class="flex justify-between items-center px-1">
-                    <span class="text-[11px] font-extrabold text-amber-900 flex items-center gap-1">
-                        <i class="fas fa-smile-wink text-amber-600"></i> 即時互動與嗆聲:
+                    <span class="text-xs font-black text-amber-950 flex items-center gap-1.5">
+                        <i class="fas fa-smile-wink text-amber-600 text-sm"></i> 即時互動與嗆聲:
                     </span>
-                    <select id="quick-taunt-select" class="bg-white border border-amber-300 text-amber-900 font-bold text-[11px] rounded-lg px-2 py-0.5 focus:outline-none cursor-pointer">
+                    <select id="quick-taunt-select" class="bg-white border border-amber-300 text-amber-950 font-bold text-xs rounded-xl px-2.5 py-1 focus:outline-none cursor-pointer shadow-sm">
                         <option value="" disabled selected>💬 選擇嗆聲短語...</option>
                         <option value="快要追上你囉！⚡">快要追上你囉！⚡</option>
                         <option value="手滑犯錯了啦！😭">手滑犯錯了啦！😭</option>
@@ -360,80 +375,80 @@
                     </select>
                 </div>
                 
-                <div class="flex justify-around items-center bg-white/80 rounded-xl py-1 px-2 border border-amber-200">
-                    <button onclick="gameInstance.sendEmoji('😂')" class="btn-action text-xl p-1" title="笑死">😂</button>
-                    <button onclick="gameInstance.sendEmoji('🔥')" class="btn-action text-xl p-1" title="火熱">🔥</button>
-                    <button onclick="gameInstance.sendEmoji('💩')" class="btn-action text-xl p-1" title="便便">💩</button>
-                    <button onclick="gameInstance.sendEmoji('👑')" class="btn-action text-xl p-1" title="皇冠">👑</button>
-                    <button onclick="gameInstance.sendEmoji('👍')" class="btn-action text-xl p-1" title="讚">👍</button>
-                    <button onclick="gameInstance.sendEmoji('😱')" class="btn-action text-xl p-1" title="驚嚇">😱</button>
-                    <button onclick="gameInstance.sendEmoji('💣')" class="btn-action text-xl p-1" title="炸彈">💣</button>
-                    <button onclick="gameInstance.sendEmoji('🏆')" class="btn-action text-xl p-1" title="獎盃">🏆</button>
+                <div class="flex justify-around items-center bg-white/90 rounded-xl py-1.5 px-3 border border-amber-200 shadow-inner">
+                    <button onclick="gameInstance.sendEmoji('😂')" class="btn-action text-2xl p-1 hover:scale-125" title="笑死">😂</button>
+                    <button onclick="gameInstance.sendEmoji('🔥')" class="btn-action text-2xl p-1 hover:scale-125" title="火熱">🔥</button>
+                    <button onclick="gameInstance.sendEmoji('💩')" class="btn-action text-2xl p-1 hover:scale-125" title="便便">💩</button>
+                    <button onclick="gameInstance.sendEmoji('👑')" class="btn-action text-2xl p-1 hover:scale-125" title="皇冠">👑</button>
+                    <button onclick="gameInstance.sendEmoji('👍')" class="btn-action text-2xl p-1 hover:scale-125" title="讚">👍</button>
+                    <button onclick="gameInstance.sendEmoji('😱')" class="btn-action text-2xl p-1 hover:scale-125" title="驚嚇">😱</button>
+                    <button onclick="gameInstance.sendEmoji('💣')" class="btn-action text-2xl p-1 hover:scale-125" title="炸彈">💣</button>
+                    <button onclick="gameInstance.sendEmoji('🏆')" class="btn-action text-2xl p-1 hover:scale-125" title="獎盃">🏆</button>
                 </div>
             </div>
 
             <!-- 遊戲頭部選單與控制選項 -->
-            <div class="w-full max-w-md flex justify-between items-center mb-2">
-                <div class="flex gap-1.5">
-                    <select id="grid-size-select" class="bg-amber-100/80 border-2 border-amber-300/60 text-amber-900 font-bold text-xs rounded-xl px-2 py-1.5 focus:outline-none cursor-pointer">
+            <div class="w-full flex justify-between items-center mb-3">
+                <div class="flex gap-2">
+                    <select id="grid-size-select" class="bg-amber-100 border-2 border-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 focus:outline-none cursor-pointer shadow-sm">
                         <option value="3">3 x 3</option>
                         <option value="4" selected>4 x 4 (經典)</option>
                         <option value="5">5 x 5</option>
                         <option value="6">6 x 6</option>
                     </select>
-                    <button id="sound-btn" class="btn-action bg-amber-100/80 border-2 border-amber-300/60 text-amber-900 font-bold text-xs rounded-xl px-2.5 py-1.5 flex items-center gap-1">
+                    <button id="sound-btn" class="btn-action bg-amber-100 border-2 border-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 flex items-center gap-1.5 shadow-sm">
                         <i id="sound-icon" class="fas fa-volume-up"></i>
                     </button>
                 </div>
 
-                <div class="flex gap-1.5">
-                    <button id="open-room-modal-btn" class="btn-action bg-yellow-500 hover:bg-yellow-600 text-amber-950 font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1">
+                <div class="flex gap-2">
+                    <button id="open-room-modal-btn" class="btn-action bg-yellow-500 hover:bg-yellow-600 text-amber-950 font-extrabold text-xs sm:text-sm rounded-xl px-3.5 py-2 shadow-md flex items-center gap-1.5">
                         <i class="fas fa-users"></i> <span id="room-status-btn-text">房間大廳</span>
                     </button>
-                    <button id="undo-btn" class="btn-action bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <button id="undo-btn" class="btn-action bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs sm:text-sm rounded-xl px-3.5 py-2 shadow-md flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
                         <i class="fas fa-undo"></i> 復原
                     </button>
-                    <button id="restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1">
+                    <button id="restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold text-xs sm:text-sm rounded-xl px-3.5 py-2 shadow-md flex items-center gap-1.5">
                         <i class="fas fa-sync-alt"></i> 重來
                     </button>
                 </div>
             </div>
 
             <!-- 計分板與個人資訊 -->
-            <div class="w-full max-w-md flex justify-between items-center mb-2 px-1">
-                <div class="flex items-center gap-2">
-                    <img id="game-player-avatar" class="w-6 h-6 rounded-full border border-amber-400 object-cover" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="Avatar">
-                    <span id="player-self-name" class="font-extrabold text-amber-900 text-sm">我 (玩家)</span>
+            <div class="w-full flex justify-between items-center mb-3 px-1">
+                <div class="flex items-center gap-2.5">
+                    <img id="game-player-avatar" class="w-8 h-8 rounded-full border-2 border-amber-400 object-cover shadow" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="Avatar">
+                    <span id="player-self-name" class="font-black text-amber-950 text-base">我 (玩家)</span>
                 </div>
-                <div class="flex gap-2">
-                    <div id="score-container" class="relative bg-board/90 px-3 py-1 rounded-xl text-center min-w-[70px] shadow-sm">
-                        <div class="text-[9px] uppercase font-bold text-amber-100 tracking-wider">分數</div>
-                        <div id="score" class="text-base font-bold text-white leading-tight">0</div>
+                <div class="flex gap-3">
+                    <div id="score-container" class="relative bg-board px-4 py-1.5 rounded-2xl text-center min-w-[90px] shadow-inner">
+                        <div class="text-[10px] uppercase font-black text-amber-100 tracking-wider">分數</div>
+                        <div id="score" class="text-lg sm:text-xl font-black text-white leading-tight">0</div>
                     </div>
-                    <div class="bg-board/90 px-3 py-1 rounded-xl text-center min-w-[70px] shadow-sm">
-                        <div class="text-[9px] uppercase font-bold text-amber-100 tracking-wider">最高分</div>
-                        <div id="best-score" class="text-base font-bold text-white leading-tight">0</div>
+                    <div class="bg-board px-4 py-1.5 rounded-2xl text-center min-w-[90px] shadow-inner">
+                        <div class="text-[10px] uppercase font-black text-amber-100 tracking-wider">最高分</div>
+                        <div id="best-score" class="text-lg sm:text-xl font-black text-white leading-tight">0</div>
                     </div>
                 </div>
             </div>
 
-            <!-- 主 2048 棋盤容器 -->
-            <main class="w-full max-w-md relative aspect-square bg-board rounded-2xl p-2.5 sm:p-3 shadow-inner flex flex-col justify-between board-container" id="board-container">
-                <div id="grid-background" class="w-full h-full grid gap-2.5 sm:gap-3"></div>
-                <div id="tile-container" class="absolute inset-2.5 sm:inset-3 pointer-events-none"></div>
+            <!-- 主 2048 棋盤容器 (最大放大至 500px 霸氣展現) -->
+            <main class="w-full max-w-[500px] relative aspect-square bg-board rounded-3xl p-3 sm:p-4 shadow-2xl flex flex-col justify-between board-container" id="board-container">
+                <div id="grid-background" class="w-full h-full grid gap-3 sm:gap-3.5"></div>
+                <div id="tile-container" class="absolute inset-3 sm:inset-4 pointer-events-none"></div>
 
                 <!-- 遊戲結束/勝負 Overlay -->
-                <div id="game-overlay" class="absolute inset-0 bg-amber-950/80 backdrop-blur-custom rounded-2xl flex flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-all duration-300 z-30">
-                    <div id="overlay-icon" class="text-5xl mb-2 text-yellow-400">
+                <div id="game-overlay" class="absolute inset-0 bg-amber-950/85 backdrop-blur-custom rounded-3xl flex flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-all duration-300 z-30">
+                    <div id="overlay-icon" class="text-6xl mb-3 text-yellow-400">
                         <i class="fas fa-trophy"></i>
                     </div>
-                    <h2 id="overlay-title" class="text-2xl sm:text-3xl font-extrabold text-white mb-1">恭喜達成 2048！</h2>
-                    <p id="overlay-msg" class="text-amber-200 text-xs mb-5 font-medium">你合成了最高方塊！</p>
-                    <div class="flex gap-2">
-                        <button id="keep-going-btn" class="btn-action bg-amber-500 hover:bg-amber-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-md hidden">
+                    <h2 id="overlay-title" class="text-3xl sm:text-4xl font-black text-white mb-2">恭喜達成 2048！</h2>
+                    <p id="overlay-msg" class="text-amber-200 text-sm mb-6 font-bold">你合成了最高方塊！</p>
+                    <div class="flex gap-3">
+                        <button id="keep-going-btn" class="btn-action bg-amber-500 hover:bg-amber-600 text-white font-extrabold px-5 py-2.5 rounded-2xl text-xs sm:text-sm shadow-lg hidden">
                             繼續挑戰
                         </button>
-                        <button id="overlay-restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md">
+                        <button id="overlay-restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold px-6 py-2.5 rounded-2xl text-xs sm:text-sm shadow-lg">
                             再玩一局
                         </button>
                     </div>
@@ -441,57 +456,59 @@
             </main>
 
             <!-- 手機十字方向按鈕 -->
-            <div class="w-full max-w-md mt-2 flex flex-col items-center">
-                <div class="grid grid-cols-3 gap-1.5 w-44 text-amber-900">
+            <div class="w-full mt-3 flex flex-col items-center">
+                <div class="grid grid-cols-3 gap-2 w-48 text-amber-950">
                     <div></div>
-                    <button id="btn-up" class="btn-action bg-amber-200/80 active:bg-amber-300 py-2 rounded-xl shadow font-bold text-base"><i class="fas fa-chevron-up"></i></button>
+                    <button id="btn-up" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2.5 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-up"></i></button>
                     <div></div>
-                    <button id="btn-left" class="btn-action bg-amber-200/80 active:bg-amber-300 py-2 rounded-xl shadow font-bold text-base"><i class="fas fa-chevron-left"></i></button>
-                    <button id="btn-down" class="btn-action bg-amber-200/80 active:bg-amber-300 py-2 rounded-xl shadow font-bold text-base"><i class="fas fa-chevron-down"></i></button>
-                    <button id="btn-right" class="btn-action bg-amber-200/80 active:bg-amber-300 py-2 rounded-xl shadow font-bold text-base"><i class="fas fa-chevron-right"></i></button>
+                    <button id="btn-left" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2.5 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-left"></i></button>
+                    <button id="btn-down" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2.5 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-down"></i></button>
+                    <button id="btn-right" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2.5 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== 右欄：即時排行榜 & 房間對戰聊天室 (3 Cols) ==================== -->
-        <section class="lg:col-span-3 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[380px] lg:min-h-[480px]">
+        <!-- ==================== 右欄：即時排行榜 & 房間對戰聊天室 (3 Cols, 飽滿垂直拉伸) ==================== -->
+        <section class="lg:col-span-3 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-5 shadow-lg flex flex-col justify-between gap-4">
             <!-- 排行榜區塊 -->
-            <div class="flex justify-between items-center pb-2 border-b border-amber-100 mb-2">
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold text-xs">
-                        <i class="fas fa-trophy"></i>
+            <div class="flex flex-col">
+                <div class="flex justify-between items-center pb-2.5 border-b border-amber-100 mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center font-black text-sm shadow-sm">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h2 class="font-black text-amber-950 text-base">即時排行榜</h2>
                     </div>
-                    <h2 class="font-extrabold text-amber-900 text-sm">即時排行榜</h2>
+                </div>
+
+                <div id="leaderboard-list" class="flex flex-col gap-2 overflow-y-auto max-h-[200px] scrollbar-thin">
+                    <div class="text-xs text-amber-800/70 text-center py-6 font-bold">
+                        連線中... 點擊右上角「複製連結」傳給好友即可連線對戰！
+                    </div>
                 </div>
             </div>
 
-            <div id="leaderboard-list" class="flex-1 flex flex-col gap-1.5 overflow-y-auto max-h-[140px] sm:max-h-[160px] scrollbar-thin mb-3">
-                <div class="text-xs text-amber-800/60 text-center py-4">
-                    連線中... 點擊右上角「複製連結」傳給好友即可連線對戰！
-                </div>
-            </div>
-
-            <!-- 房間即時聊天室區塊 -->
-            <div class="border-t border-amber-200/80 pt-2.5 flex-1 flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-1.5">
-                    <div class="flex items-center gap-1.5">
-                        <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+            <!-- 房間即時聊天室區塊 (擴大聊天視窗) -->
+            <div class="border-t-2 border-amber-200/80 pt-3 flex-1 flex flex-col justify-between min-h-[260px]">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-sm shadow-sm">
                             <i class="fas fa-comments"></i>
                         </div>
-                        <h3 class="font-extrabold text-amber-900 text-xs">房間即時聊天</h3>
+                        <h3 class="font-black text-amber-950 text-base">房間即時聊天</h3>
                     </div>
-                    <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">WebRTC P2P</span>
+                    <span class="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">WebRTC P2P</span>
                 </div>
 
-                <!-- 聊天紀錄訊息框 -->
-                <div id="chat-messages-log" class="flex-1 bg-amber-50/70 border border-amber-200 rounded-xl p-2 space-y-1.5 overflow-y-auto max-h-[160px] min-h-[100px] scrollbar-thin text-xs">
-                    <div class="text-[10px] text-amber-800/60 text-center italic py-2">歡迎來到對戰聊天室，發送訊息讓好友看見！</div>
+                <!-- 聊天紀錄訊息框 (大幅擴大高度) -->
+                <div id="chat-messages-log" class="flex-1 bg-amber-50/80 border border-amber-200 rounded-2xl p-3 space-y-2 overflow-y-auto max-h-[280px] min-h-[160px] scrollbar-thin text-xs">
+                    <div class="text-xs text-amber-800/60 text-center italic py-4 font-medium">歡迎來到對戰聊天室，發送訊息讓好友看見！</div>
                 </div>
 
                 <!-- 聊天訊息輸入框與發送鈕 -->
-                <div class="flex gap-1.5 mt-2">
-                    <input type="text" id="chat-input" class="flex-1 bg-white border border-amber-300 rounded-xl px-3 py-1.5 text-xs text-amber-950 font-bold focus:outline-none focus:border-amber-500" placeholder="輸入聊天訊息..." maxlength="60">
-                    <button id="send-chat-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow flex items-center justify-center">
+                <div class="flex gap-2 mt-3">
+                    <input type="text" id="chat-input" class="flex-1 bg-white border-2 border-amber-300 rounded-2xl px-3.5 py-2 text-xs sm:text-sm text-amber-950 font-bold focus:outline-none focus:border-amber-500 shadow-inner" placeholder="輸入聊天訊息..." maxlength="60">
+                    <button id="send-chat-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold px-4 py-2 rounded-2xl text-xs sm:text-sm shadow flex items-center justify-center">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
@@ -829,14 +846,14 @@
 
                 if (this.currentUser) {
                     if (displayName) displayName.textContent = this.currentUser.name;
-                    if (loginStatus) { loginStatus.textContent = 'Google 已登入'; loginStatus.className = 'text-[9px] font-bold text-emerald-400'; }
+                    if (loginStatus) { loginStatus.textContent = 'Google 已登入'; loginStatus.className = 'text-[10px] font-bold text-emerald-400'; }
                     if (googleBtn) googleBtn.classList.add('hidden');
                     if (logoutBtn) logoutBtn.classList.remove('hidden');
                     if (portalName) portalName.textContent = this.currentUser.name;
                     if (portalDesc) portalDesc.textContent = this.currentUser.email;
                 } else {
                     if (displayName) displayName.textContent = this.playerName;
-                    if (loginStatus) { loginStatus.textContent = '未登入'; loginStatus.className = 'text-[9px] font-bold text-amber-300'; }
+                    if (loginStatus) { loginStatus.textContent = '未登入'; loginStatus.className = 'text-[10px] font-bold text-amber-300'; }
                     if (googleBtn) googleBtn.classList.remove('hidden');
                     if (logoutBtn) logoutBtn.classList.add('hidden');
                     if (portalName) portalName.textContent = this.playerName;
@@ -998,7 +1015,6 @@
 
             startHeartbeat() {
                 if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
-                // 2000ms 心跳保活，日常移動則由 move() / restart() 事件驅動即時廣播，極致省頻寬！
                 this.heartbeatTimer = setInterval(() => {
                     if (this.peer && Object.keys(this.connections).length > 0) {
                         this.broadcastP2PState();
@@ -1095,13 +1111,13 @@
                 const log = document.getElementById('chat-messages-log');
                 if (!log) return;
                 const msgEl = document.createElement('div');
-                msgEl.className = `flex flex-col p-1.5 rounded-xl border ${isSelf ? 'bg-amber-100/90 border-amber-300 self-end text-right ml-4' : 'bg-white border-amber-200 self-start mr-4'}`;
+                msgEl.className = `flex flex-col p-2 rounded-2xl border ${isSelf ? 'bg-amber-100/90 border-amber-300 self-end text-right ml-6 shadow-sm' : 'bg-white border-amber-200 self-start mr-6 shadow-sm'}`;
                 msgEl.innerHTML = `
-                    <div class="flex items-center gap-1 text-[10px] font-bold ${isSelf ? 'justify-end text-amber-900' : 'text-amber-800'}">
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold ${isSelf ? 'justify-end text-amber-900' : 'text-amber-800'}">
                         <span>${sender}</span>
-                        <span class="text-[8px] opacity-60">${time}</span>
+                        <span class="text-[9px] opacity-60 font-normal">${time}</span>
                     </div>
-                    <div class="text-xs font-bold text-amber-950 mt-0.5 break-words">${text}</div>
+                    <div class="text-xs sm:text-sm font-bold text-amber-950 mt-0.5 break-words">${text}</div>
                 `;
                 log.appendChild(msgEl);
                 log.scrollTop = log.scrollHeight;
@@ -1208,7 +1224,7 @@
             displayFloatingEmoji(emoji, playerName) {
                 const el = document.createElement('div');
                 el.className = 'floating-emoji';
-                el.innerHTML = `<div>${emoji}</div><div class="text-[10px] bg-amber-950/80 text-white font-bold px-1.5 py-0.5 rounded-full text-center">${playerName}</div>`;
+                el.innerHTML = `<div>${emoji}</div><div class="text-[10px] bg-amber-950/80 text-white font-bold px-2 py-0.5 rounded-full text-center shadow-lg">${playerName}</div>`;
                 const randomX = Math.floor(Math.random() * (window.innerWidth - 100)) + 30;
                 el.style.left = `${randomX}px`;
                 el.style.bottom = `80px`;
@@ -1218,7 +1234,7 @@
 
             displayTauntBubble(playerName, text) {
                 const toast = document.createElement('div');
-                toast.className = 'fixed top-16 left-1/2 -translate-x-1/2 bg-amber-950/90 border-2 border-amber-400 text-amber-100 font-extrabold px-4 py-2 rounded-2xl shadow-2xl z-50 text-sm flex items-center gap-2 animate-bounce';
+                toast.className = 'fixed top-16 left-1/2 -translate-x-1/2 bg-amber-950/90 border-2 border-amber-400 text-amber-100 font-extrabold px-5 py-2.5 rounded-2xl shadow-2xl z-50 text-base flex items-center gap-2 animate-bounce';
                 toast.innerHTML = `<span class="text-yellow-400">[${playerName}]</span>: ${text}`;
                 document.body.appendChild(toast);
                 setTimeout(() => { if (toast && toast.parentNode) toast.parentNode.removeChild(toast); }, 2500);
@@ -1230,7 +1246,7 @@
                 this.gridBg.style.gridTemplateRows = `repeat(${this.size}, minmax(0, 1fr))`;
                 for (let i = 0; i < this.size * this.size; i++) {
                     const cell = document.createElement('div');
-                    cell.className = 'bg-tileBg/60 rounded-lg w-full h-full';
+                    cell.className = 'bg-tileBg/60 rounded-xl w-full h-full';
                     this.gridBg.appendChild(cell);
                 }
             }
@@ -1246,7 +1262,7 @@
                 this.history = [];
                 this.won = false;
                 this.keepPlaying = false;
-                this.over = false; // 優先更新 over=false，確保廣播狀態不卡在淘汰狀態！
+                this.over = false;
 
                 this.buildBackgroundGrid();
                 this.hideOverlay();
@@ -1256,7 +1272,6 @@
                 this.addRandomTile();
                 this.actuate();
                 
-                // 事件驅動：重置後立即廣播一次最新狀態
                 if (this.peer) this.broadcastP2PState();
             }
 
@@ -1392,7 +1407,6 @@
                     this.addRandomTile();
                     this.actuate();
                     
-                    // 事件驅動（Event-driven）：每次移動成功即刻廣播 state
                     if (this.peer) this.broadcastP2PState();
 
                     if (!this.won && !this.keepPlaying && this.hasTileValue(2048)) {
@@ -1548,7 +1562,7 @@
             renderSpectateList() {
                 const players = Object.values(this.roomPlayers).filter(p => p.id !== this.myPeerId);
                 const badge = document.getElementById('spectate-count-badge');
-                if (badge) badge.textContent = `在线玩家: ${Object.keys(this.roomPlayers).length}`;
+                if (badge) badge.textContent = `在線玩家: ${Object.keys(this.roomPlayers).length}`;
 
                 if (!this.spectateTargetId && players.length > 0) {
                     this.spectateTargetId = players[0].id;
@@ -1622,32 +1636,32 @@
                 const container = document.getElementById('leaderboard-list');
                 if (!container) return;
                 if (!list || list.length === 0) {
-                    container.innerHTML = `<div class="text-xs text-amber-800/60 text-center py-6">尚無排名資料</div>`;
+                    container.innerHTML = `<div class="text-xs text-amber-800/60 text-center py-6 font-bold">尚無排名資料</div>`;
                     return;
                 }
 
                 container.innerHTML = list.map((item, idx) => {
-                    let rankBadge = `<span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-amber-200 text-amber-900">${idx + 1}</span>`;
-                    if (idx === 0) rankBadge = `<span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-yellow-400 text-amber-950 shadow"><i class="fas fa-crown"></i></span>`;
-                    else if (idx === 1) rankBadge = `<span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-slate-300 text-slate-800">2</span>`;
-                    else if (idx === 2) rankBadge = `<span class="w-5 h-5 font-bold text-xs flex items-center justify-center rounded-full bg-amber-600 text-white">3</span>`;
+                    let rankBadge = `<span class="w-6 h-6 font-bold text-xs flex items-center justify-center rounded-full bg-amber-200 text-amber-900">${idx + 1}</span>`;
+                    if (idx === 0) rankBadge = `<span class="w-6 h-6 font-bold text-xs flex items-center justify-center rounded-full bg-yellow-400 text-amber-950 shadow"><i class="fas fa-crown"></i></span>`;
+                    else if (idx === 1) rankBadge = `<span class="w-6 h-6 font-bold text-xs flex items-center justify-center rounded-full bg-slate-300 text-slate-800">2</span>`;
+                    else if (idx === 2) rankBadge = `<span class="w-6 h-6 font-bold text-xs flex items-center justify-center rounded-full bg-amber-600 text-white">3</span>`;
 
                     const isSelf = item.id === this.myPeerId;
 
                     return `
-                        <div class="p-2 rounded-xl flex justify-between items-center text-xs font-bold border transition-all ${isSelf ? 'bg-amber-100 border-amber-400 shadow-sm' : 'bg-amber-50/60 border-amber-200/60'}">
-                            <div class="flex items-center gap-2">
+                        <div class="p-2.5 rounded-2xl flex justify-between items-center text-xs font-bold border transition-all ${isSelf ? 'bg-amber-100 border-amber-400 shadow-md' : 'bg-amber-50/80 border-amber-200/80'}">
+                            <div class="flex items-center gap-2.5">
                                 ${rankBadge}
                                 <div>
-                                    <div class="text-amber-950 flex items-center gap-1">
+                                    <div class="text-amber-950 text-xs sm:text-sm font-black flex items-center gap-1">
                                         ${item.name} ${item.isHost ? '<i class="fas fa-star text-yellow-500 text-[10px]" title="房主"></i>' : ''}
                                     </div>
-                                    <div class="text-[10px] text-amber-700/80 font-normal">最高方塊: ${item.maxTile || 2}</div>
+                                    <div class="text-[10px] text-amber-700/80 font-bold">最高方塊: ${item.maxTile || 2}</div>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <div class="text-amber-900 font-extrabold text-sm">${item.score}</div>
-                                <div class="text-[9px] ${item.status === 'gameover' ? 'text-rose-600' : 'text-emerald-600'}">${item.status === 'gameover' ? '淘汰' : '對戰中'}</div>
+                                <div class="text-amber-950 font-black text-base">${item.score}</div>
+                                <div class="text-[10px] font-bold ${item.status === 'gameover' ? 'text-rose-600' : 'text-emerald-600'}">${item.status === 'gameover' ? '淘汰' : '對戰中'}</div>
                             </div>
                         </div>
                     `;
@@ -1686,11 +1700,9 @@
                     }, { passive: true });
                 }
 
-                // 導覽列大廳主頁按鈕
                 const navHomeBtn = document.getElementById('nav-home-btn');
                 if (navHomeBtn) navHomeBtn.addEventListener('click', () => this.showPortalView());
 
-                // 大廳卡片點擊事件
                 const portalCreateRoomBtn = document.getElementById('portal-create-room-btn');
                 if (portalCreateRoomBtn) {
                     portalCreateRoomBtn.addEventListener('click', () => {
@@ -1759,7 +1771,6 @@
                 const btnDown = document.getElementById('btn-down'); if (btnDown) btnDown.addEventListener('click', () => this.move(2));
                 const btnLeft = document.getElementById('btn-left'); if (btnLeft) btnLeft.addEventListener('click', () => this.move(3));
 
-                // 聊天輸入發送事件
                 const sendChatBtn = document.getElementById('send-chat-btn');
                 if (sendChatBtn) sendChatBtn.addEventListener('click', () => this.sendChatMessage());
 
