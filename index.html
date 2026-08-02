@@ -1074,9 +1074,9 @@
                 const savedMode = localStorage.getItem('2048_game_mode');
 
                 if (roomFromUrl && !isHomePath) {
-                    // 多人模式：有房間碼 → 重連房間
+                    // 多人模式：有房間碼 → 重連房間（重整從存檔還原）
                     this.showGameView();
-                    this.autoConnectRoom(roomFromUrl.toUpperCase());
+                    this.autoConnectRoom(roomFromUrl.toUpperCase(), true); // fromRefresh=true
                 } else if (savedMode === 'single' && !isHomePath) {
                     // 單人模式：直接還原遊戲畫面（restart 會自動載入存檔）
                     this.showGameView();
@@ -1093,7 +1093,7 @@
                 }
             }
 
-            autoConnectRoom(code) {
+            autoConnectRoom(code, fromRefresh = false) {
                 this.closeRoomModal();
                 this.roomPlayers = {};
                 this.connections = {};
@@ -1108,6 +1108,11 @@
                 this.roomId = code;
                 this.syncRoomToStorageAndUrl(code);
                 this.myPeerId = `2048-peer-${Math.random().toString(36).substring(2, 8)}`;
+
+                // 從 UI 進入（非重整）則開新局；重整則還原存檔
+                if (!fromRefresh) {
+                    this.restart(true);
+                }
 
                 if (typeof Peer !== 'undefined') {
                     try {
@@ -1162,6 +1167,11 @@
                 this.syncRoomToStorageAndUrl(code);
                 this.isHost = true;
                 this.myPeerId = `2048-room-${code}`;
+
+                // 創建新房間必定開新局（不繼承單人存檔）
+                if (!silent) {
+                    this.restart(true);
+                }
 
                 if (typeof Peer !== 'undefined') {
                     try {
@@ -2109,7 +2119,7 @@
                         const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
                         if (!code) { alert('請輸入房間號！'); return; }
                         this.showGameView();
-                        this.autoConnectRoom(code);
+                        this.autoConnectRoom(code, false); // 從 UI 進入，開新局
                     });
                 }
             }
