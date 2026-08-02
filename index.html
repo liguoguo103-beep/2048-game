@@ -305,9 +305,9 @@
     <div id="game-view" class="hidden w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1 items-stretch">
         
         <!-- ==================== 左欄：即時觀戰 Panel (3 Cols) ==================== -->
-        <section class="lg:col-span-3 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-5 shadow-lg flex flex-col justify-between">
+        <section class="lg:col-span-3 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-5 shadow-lg flex flex-col gap-3">
             <div>
-                <div class="flex justify-between items-center pb-3 border-b border-amber-100 mb-4">
+                <div class="flex justify-between items-center pb-3 border-b border-amber-100 mb-3">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-extrabold text-base shadow-sm">
                             <i class="fas fa-eye"></i>
@@ -320,7 +320,7 @@
                 </div>
 
                 <!-- 左右箭頭觀戰切換組件 -->
-                <div class="mb-4">
+                <div class="mb-3">
                     <div class="text-xs font-bold text-amber-800/80 mb-2 text-center">切換觀看玩家：</div>
                     <div class="flex items-center justify-between gap-2 bg-amber-100/70 border border-amber-300 rounded-2xl p-2 shadow-inner">
                         <button id="spectate-prev-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
@@ -343,12 +343,12 @@
             </div>
 
             <!-- 即時觀戰主棋盤畫面 -->
-            <div class="flex-1 flex flex-col items-center justify-center bg-amber-50/80 border-2 border-amber-200/80 rounded-2xl p-4 relative min-h-[260px]">
+            <div class="flex-1 flex flex-col items-center justify-start bg-amber-50/80 border-2 border-amber-200/80 rounded-2xl p-3 relative">
                 <div id="spectate-target-status" class="mb-3 text-xs font-extrabold px-3.5 py-1 rounded-full bg-amber-200 text-amber-900 shadow-sm">
                     等待連線中
                 </div>
 
-                <div class="w-full max-w-[260px] aspect-square bg-board rounded-2xl p-2.5 shadow-inner flex items-center justify-center relative" id="spectate-grid-container">
+                <div class="w-full aspect-square bg-board rounded-2xl p-2 shadow-inner flex items-center justify-center relative" id="spectate-grid-container">
                     <div id="spectate-mini-grid" class="w-full h-full grid gap-1.5">
                         <div class="text-center text-amber-100 text-xs flex items-center justify-center h-full font-bold">
                             點擊左右箭頭切換觀戰玩家
@@ -359,10 +359,10 @@
         </section>
 
         <!-- ==================== 中欄：個人遊戲主戰場 (6 Cols) ==================== -->
-        <section class="lg:col-span-6 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-6 shadow-lg flex flex-col items-center justify-between">
+        <section class="lg:col-span-6 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-5 shadow-lg flex flex-col items-center gap-2">
             
             <!-- 互動嗆聲與表情浮動吧 -->
-            <div class="w-full bg-amber-100/90 border-2 border-amber-300/80 rounded-2xl p-2.5 mb-3 shadow-sm flex flex-col gap-2">
+            <div class="w-full bg-amber-100/90 border-2 border-amber-300/80 rounded-2xl p-2 shadow-sm flex flex-col gap-2">
                 <div class="flex justify-between items-center px-1">
                     <span class="text-xs font-black text-amber-950 flex items-center gap-1.5">
                         <i class="fas fa-smile-wink text-amber-600 text-sm"></i> 即時互動與嗆聲:
@@ -378,20 +378,20 @@
                     </select>
                 </div>
                 
-                <div class="flex justify-around items-center bg-white/90 rounded-xl py-1.5 px-3 border border-amber-200 shadow-inner">
-                    <button onclick="gameInstance.sendEmoji('😂')" class="btn-action text-2xl p-1 hover:scale-125" title="笑死">😂</button>
-                    <button onclick="gameInstance.sendEmoji('🔥')" class="btn-action text-2xl p-1 hover:scale-125" title="火熱">🔥</button>
-                    <button onclick="gameInstance.sendEmoji('💩')" class="btn-action text-2xl p-1 hover:scale-125" title="便便">💩</button>
-                    <button onclick="gameInstance.sendEmoji('👑')" class="btn-action text-2xl p-1 hover:scale-125" title="皇冠">👑</button>
-                    <button onclick="gameInstance.sendEmoji('👍')" class="btn-action text-2xl p-1 hover:scale-125" title="讚">👍</button>
-                    <button onclick="gameInstance.sendEmoji('😱')" class="btn-action text-2xl p-1 hover:scale-125" title="驚嚇">😱</button>
-                    <button onclick="gameInstance.sendEmoji('💣')" class="btn-action text-2xl p-1 hover:scale-125" title="炸彈">💣</button>
-                    <button onclick="gameInstance.sendEmoji('🏆')" class="btn-action text-2xl p-1 hover:scale-125" title="獎盃">🏆</button>
+                <div class="flex justify-around items-center bg-white/90 rounded-xl py-1 px-3 border border-amber-200 shadow-inner">
+                    <button onclick="gameInstance.sendEmoji('😂')" class="btn-action text-xl p-1 hover:scale-125" title="笑死">😂</button>
+                    <button onclick="gameInstance.sendEmoji('🔥')" class="btn-action text-xl p-1 hover:scale-125" title="火熱">🔥</button>
+                    <button onclick="gameInstance.sendEmoji('💩')" class="btn-action text-xl p-1 hover:scale-125" title="便便">💩</button>
+                    <button onclick="gameInstance.sendEmoji('👑')" class="btn-action text-xl p-1 hover:scale-125" title="皇冠">👑</button>
+                    <button onclick="gameInstance.sendEmoji('👍')" class="btn-action text-xl p-1 hover:scale-125" title="讚">👍</button>
+                    <button onclick="gameInstance.sendEmoji('😱')" class="btn-action text-xl p-1 hover:scale-125" title="驚嚇">😱</button>
+                    <button onclick="gameInstance.sendEmoji('💣')" class="btn-action text-xl p-1 hover:scale-125" title="炸彈">💣</button>
+                    <button onclick="gameInstance.sendEmoji('🏆')" class="btn-action text-xl p-1 hover:scale-125" title="獎盃">🏆</button>
                 </div>
             </div>
 
             <!-- 遊戲頭部選單與控制選項 -->
-            <div class="w-full flex justify-between items-center mb-3">
+            <div class="w-full flex justify-between items-center">
                 <div class="flex gap-2">
                     <select id="grid-size-select" class="bg-amber-100 border-2 border-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 focus:outline-none cursor-pointer shadow-sm">
                         <option value="3">3 x 3</option>
@@ -418,7 +418,7 @@
             </div>
 
             <!-- 計分板與個人資訊 -->
-            <div class="w-full flex justify-between items-center mb-3 px-1">
+            <div class="w-full flex justify-between items-center px-1">
                 <div class="flex items-center gap-2.5">
                     <img id="game-player-avatar" class="w-8 h-8 rounded-full border-2 border-amber-400 object-cover shadow" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="Avatar">
                     <span id="player-self-name" class="font-black text-amber-950 text-base">我 (玩家)</span>
@@ -436,7 +436,7 @@
             </div>
 
             <!-- 主 2048 棋盤容器 -->
-            <main class="w-full max-w-[500px] relative aspect-square bg-board rounded-3xl p-3 sm:p-4 shadow-2xl flex flex-col justify-between board-container" id="board-container">
+            <main class="w-full flex-1 relative bg-board rounded-3xl p-3 sm:p-4 shadow-2xl board-container" id="board-container" style="min-height:0;">
                 <div id="grid-background" class="w-full h-full grid gap-3 sm:gap-3.5"></div>
                 <div id="tile-container" class="absolute inset-3 sm:inset-4 pointer-events-none"></div>
 
@@ -459,14 +459,14 @@
             </main>
 
             <!-- 手機十字方向按鈕 -->
-            <div class="w-full mt-3 flex flex-col items-center">
-                <div class="grid grid-cols-3 gap-2 w-48 text-amber-950">
+            <div class="w-full flex flex-col items-center">
+                <div class="grid grid-cols-3 gap-1.5 w-40 text-amber-950">
                     <div></div>
-                    <button id="btn-up" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2.5 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-up"></i></button>
+                    <button id="btn-up" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-up"></i></button>
                     <div></div>
-                    <button id="btn-left" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2.5 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-left"></i></button>
-                    <button id="btn-down" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2.5 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-down"></i></button>
-                    <button id="btn-right" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2.5 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-right"></i></button>
+                    <button id="btn-left" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-left"></i></button>
+                    <button id="btn-down" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-down"></i></button>
+                    <button id="btn-right" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2 rounded-2xl shadow font-black text-lg"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
         </section>
@@ -492,8 +492,8 @@
             </div>
 
             <!-- 房間即時聊天室區塊 -->
-            <div class="border-t-2 border-amber-200/80 pt-3 flex-1 flex flex-col justify-between min-h-[260px]">
-                <div class="flex justify-between items-center mb-2">
+            <div class="border-t-2 border-amber-200/80 pt-3 flex-1 flex flex-col gap-2" style="min-height:0;">
+                <div class="flex justify-between items-center">
                     <div class="flex items-center gap-2">
                         <div class="w-7 h-7 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-sm shadow-sm">
                             <i class="fas fa-comments"></i>
@@ -504,12 +504,12 @@
                 </div>
 
                 <!-- 聊天紀錄訊息框 -->
-                <div id="chat-messages-log" class="flex-1 bg-amber-50/80 border border-amber-200 rounded-2xl p-3 space-y-2 overflow-y-auto max-h-[280px] min-h-[160px] scrollbar-thin text-xs">
+                <div id="chat-messages-log" class="flex-1 bg-amber-50/80 border border-amber-200 rounded-2xl p-3 space-y-2 overflow-y-auto scrollbar-thin text-xs" style="min-height:0;">
                     <div class="text-xs text-amber-800/60 text-center italic py-4 font-medium">歡迎來到對戰聊天室，發送訊息讓好友看見！</div>
                 </div>
 
                 <!-- 聊天訊息輸入框與發送鈕 -->
-                <div class="flex gap-2 mt-3">
+                <div class="flex gap-2">
                     <input type="text" id="chat-input" class="flex-1 bg-white border-2 border-amber-300 rounded-2xl px-3.5 py-2 text-xs sm:text-sm text-amber-950 font-bold focus:outline-none focus:border-amber-500 shadow-inner" placeholder="輸入聊天訊息..." maxlength="60">
                     <button id="send-chat-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold px-4 py-2 rounded-2xl text-xs sm:text-sm shadow flex items-center justify-center">
                         <i class="fas fa-paper-plane"></i>
