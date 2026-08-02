@@ -817,16 +817,25 @@
                 localStorage.setItem('2048_saved_score', this.score.toString());
                 localStorage.setItem('2048_saved_size', this.size.toString());
                 localStorage.setItem('2048_saved_won', this.won ? '1' : '0');
+                // 記錄當前模式（單人 or 多人），用於重整後判斷要不要回 HOME
+                localStorage.setItem('2048_game_mode', this.roomId ? 'multi' : 'single');
             }
 
             loadSavedGame() {
-                // 從 localStorage 還原棋盤（僅單人模式）
+                // 從 localStorage 還原棋盤（含單人與多人模式）
                 try {
                     const savedGrid = JSON.parse(localStorage.getItem('2048_saved_grid') || 'null');
                     const savedScore = parseInt(localStorage.getItem('2048_saved_score') || '0', 10);
                     const savedWon = localStorage.getItem('2048_saved_won') === '1';
-                    if (!savedGrid || savedGrid.length !== this.size) return false;
+                    const savedSize = parseInt(localStorage.getItem('2048_saved_size') || '4', 10);
+                    if (!savedGrid || savedGrid.length !== savedSize) return false;
 
+                    // 讓棋盤尺寸與存檔一致
+                    this.size = savedSize;
+                    const sizeSelect = document.getElementById('grid-size-select');
+                    if (sizeSelect) sizeSelect.value = savedSize.toString();
+
+                    this.buildBackgroundGrid();
                     this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
                     this.tiles = [];
                     if (this.tileContainer) this.tileContainer.innerHTML = '';
@@ -968,6 +977,7 @@
                 this.roomId = null;
                 this.isHost = false;
                 localStorage.removeItem('2048_active_room');
+                localStorage.removeItem('2048_game_mode'); // 清除遊玩模式，下次重整回 HOME
 
                 // 強制更改網址列為 /2048-game/home
                 let targetHomeUrl = '/2048-game/home';
@@ -1061,10 +1071,15 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const roomFromUrl = urlParams.get('room') || localStorage.getItem('2048_active_room');
                 const isHomePath = window.location.pathname.endsWith('/home') || window.location.pathname.endsWith('/home/');
+                const savedMode = localStorage.getItem('2048_game_mode');
 
                 if (roomFromUrl && !isHomePath) {
+                    // 多人模式：有房間碼 → 重連房間
                     this.showGameView();
                     this.autoConnectRoom(roomFromUrl.toUpperCase());
+                } else if (savedMode === 'single' && !isHomePath) {
+                    // 單人模式：直接還原遊戲畫面（restart 會自動載入存檔）
+                    this.showGameView();
                 } else {
                     this.showPortalView();
                 }
@@ -1906,7 +1921,7 @@
                 if (portalSingleBtn) {
                     portalSingleBtn.addEventListener('click', () => {
                         this.showGameView();
-                        this.restart();
+                        this.restart(true); // 從主頁進入單人模式，強制開新局
                     });
                 }
 
