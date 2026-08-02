@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>2048 多人線上對戰</title>
+    <title>2048 多人線上對戰大廳</title>
     <!-- 網頁標籤頁圖示 (Favicon) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23edc22e'/><text x='50' y='64' font-size='36' font-weight='900' font-family='sans-serif' fill='%23ffffff' text-anchor='middle'>2048</text></svg>">
     <!-- Tailwind CSS -->
@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Google Identity Services SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- PeerJS for WebRTC P2P Multiplayer -->
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     
@@ -168,10 +170,16 @@
 </head>
 <body class="min-h-screen bg-amber-50/50 flex flex-col justify-between p-2 sm:p-4 select-none">
 
-    <!-- 頂部導覽與房間狀態列 -->
+    <!-- 全局頂部導覽列 -->
     <header class="w-full bg-amber-900 text-white rounded-2xl px-4 py-3 shadow-md mb-3 flex flex-wrap justify-between items-center gap-3">
         <div class="flex items-center gap-3">
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-300">2048 <span class="text-xs bg-emerald-700 text-emerald-100 px-2 py-0.5 rounded-full font-medium ml-1">多人線上對戰</span></h1>
+            <button id="nav-home-btn" class="btn-action flex items-center gap-2 hover:opacity-90">
+                <span class="text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-300">2048</span>
+                <span class="text-xs bg-amber-700 text-amber-100 px-2.5 py-1 rounded-full font-bold border border-amber-600">
+                    <i class="fas fa-home mr-1"></i> 大廳主頁
+                </span>
+            </button>
+
             <div id="room-badge" class="hidden items-center bg-amber-800/80 border border-amber-600 px-3 py-1 rounded-xl text-xs">
                 <span class="text-amber-300 font-bold mr-1.5">房間號:</span>
                 <span id="room-code-display" class="font-extrabold tracking-widest text-white mr-2">-----</span>
@@ -181,15 +189,106 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
-            <button id="open-room-modal-btn" class="btn-action bg-yellow-500 hover:bg-yellow-600 text-amber-950 font-bold text-xs rounded-xl px-3.5 py-2 shadow flex items-center gap-1.5">
-                <i class="fas fa-users"></i> <span id="room-status-btn-text">創建/加入房間</span>
-            </button>
+        <!-- 右側 Google 登入 / 用戶個人資訊卡片 -->
+        <div class="flex items-center gap-3">
+            <div id="user-profile-bar" class="flex items-center gap-2.5 bg-amber-950/60 border border-amber-700/80 px-3 py-1.5 rounded-xl">
+                <img id="user-avatar-img" class="w-8 h-8 rounded-full border-2 border-amber-400 object-cover" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="User Avatar">
+                <div class="flex flex-col text-left">
+                    <span id="user-display-name" class="text-xs font-extrabold text-white truncate max-w-[100px]">訪客玩家</span>
+                    <span id="user-login-status" class="text-[9px] font-bold text-amber-300">未登入</span>
+                </div>
+                <button id="google-login-btn" class="btn-action bg-white hover:bg-gray-100 text-gray-800 font-bold text-xs px-2.5 py-1 rounded-lg border flex items-center gap-1.5 shadow-sm ml-1">
+                    <i class="fab fa-google text-red-500"></i> Google 登入
+                </button>
+                <button id="user-logout-btn" class="hidden btn-action text-amber-300 hover:text-white font-bold text-xs p-1 ml-1" title="登出">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- 主要 3 欄式響應式主架構 -->
-    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 items-start">
+    <!-- ==================== View 1: 遊戲大廳主頁 Portal ==================== -->
+    <main id="portal-view" class="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center gap-6 py-4">
+        <!-- 歡迎視覺面板 -->
+        <div class="w-full bg-gradient-to-r from-amber-800 via-amber-900 to-amber-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-700 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="space-y-2 text-center md:text-left">
+                <div class="inline-block bg-yellow-500/20 border border-yellow-400/40 text-yellow-300 text-xs font-extrabold px-3 py-1 rounded-full">
+                    ✨ 歡迎來到 2048 線上遊戲大廳
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-amber-200">隨時隨地，與好友即時對戰</h2>
+                <p class="text-amber-100/80 text-xs sm:text-sm max-w-md">登入 Google 帳號即可記錄您的最高得分與對戰紀錄。創建房間發送連結，即可邀請好友進行即時對戰、觀戰與房間聊天！</p>
+            </div>
+
+            <!-- 主頁登入與卡片按鈕 -->
+            <div class="bg-amber-950/70 border border-amber-700 p-4 rounded-2xl flex flex-col items-center gap-3 w-full md:w-64 text-center">
+                <img id="portal-user-avatar" class="w-16 h-16 rounded-full border-4 border-amber-400 shadow-md" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="Avatar">
+                <div>
+                    <h4 id="portal-user-name" class="font-extrabold text-amber-200 text-base">訪客玩家</h4>
+                    <p id="portal-user-desc" class="text-xs text-amber-400/80">未登入帳號</p>
+                </div>
+                <button id="portal-google-btn" class="w-full btn-action bg-white hover:bg-gray-100 text-gray-900 font-extrabold text-xs py-2.5 rounded-xl shadow flex items-center justify-center gap-2">
+                    <i class="fab fa-google text-red-500 text-sm"></i> 使用 Google 帳號登入
+                </button>
+            </div>
+        </div>
+
+        <!-- 模式選擇 3 大卡片 -->
+        <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- 卡片 1: 多人即時對戰 -->
+            <div class="bg-white/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center text-2xl font-bold mb-3">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-amber-950 mb-1">多人線上對戰</h3>
+                    <p class="text-xs text-amber-700 leading-relaxed mb-4">創建或加入房間，透過房間連結邀請好友進行多人即時對戰、觀戰與房間聊天。</p>
+                </div>
+                <button id="portal-create-room-btn" class="w-full btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold py-3 rounded-2xl text-xs shadow flex items-center justify-center gap-2">
+                    <i class="fas fa-plus-circle"></i> 創建 / 加入對戰房間
+                </button>
+            </div>
+
+            <!-- 卡片 2: 單人經典練習 -->
+            <div class="bg-white/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-2xl flex items-center justify-center text-2xl font-bold mb-3">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-amber-950 mb-1">單人經典模式</h3>
+                    <p class="text-xs text-amber-700 leading-relaxed mb-4">選擇 3x3 到 6x6 多種棋盤規格，支援無限復原與個人最高分挑戰。</p>
+                </div>
+                <button id="portal-single-btn" class="w-full btn-action bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 rounded-2xl text-xs shadow flex items-center justify-center gap-2">
+                    <i class="fas fa-play"></i> 開始單人模式
+                </button>
+            </div>
+
+            <!-- 卡片 3: 個人戰績卡 -->
+            <div class="bg-white/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-yellow-100 text-yellow-700 rounded-2xl flex items-center justify-center text-2xl font-bold mb-3">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-amber-950 mb-1">個人最高紀錄</h3>
+                    <div class="space-y-2 my-3 text-xs font-bold text-amber-900">
+                        <div class="flex justify-between bg-amber-50 p-2 rounded-xl">
+                            <span>最高得分：</span>
+                            <span id="portal-stat-score" class="text-amber-950 font-extrabold">0</span>
+                        </div>
+                        <div class="flex justify-between bg-amber-50 p-2 rounded-xl">
+                            <span>最高數字方塊：</span>
+                            <span id="portal-stat-tile" class="text-amber-950 font-extrabold">2</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="portal-reset-stat-btn" class="w-full btn-action bg-amber-200 hover:bg-amber-300 text-amber-900 font-extrabold py-2.5 rounded-2xl text-xs">
+                    重置本地紀錄
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==================== View 2: 主要遊戲戰場 (點選模式後顯示) ==================== -->
+    <div id="game-view" class="hidden w-full grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 items-start">
         
         <!-- ==================== 左欄：即時觀戰 Panel (4 Cols) ==================== -->
         <section class="lg:col-span-4 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[480px]">
@@ -209,12 +308,10 @@
             <div class="mb-3">
                 <div class="text-xs font-bold text-amber-700/80 mb-1.5 text-center">切換觀看玩家：</div>
                 <div class="flex items-center justify-between gap-2 bg-amber-100/60 border border-amber-300 rounded-2xl p-1.5 shadow-sm">
-                    <!-- 左箭頭按鈕 -->
                     <button id="spectate-prev-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
                         <i class="fas fa-chevron-left"></i>
                     </button>
                     
-                    <!-- 中間玩家暱稱與分數 -->
                     <div class="flex-1 bg-white border border-amber-200 rounded-xl py-1 px-2 text-center shadow-inner overflow-hidden">
                         <div id="spectate-target-name" class="font-extrabold text-sm text-amber-950 truncate">未選取觀戰目標</div>
                         <div class="text-[10px] font-bold text-amber-700 flex justify-center gap-2 mt-0.5">
@@ -223,7 +320,6 @@
                         </div>
                     </div>
 
-                    <!-- 右箭頭按鈕 -->
                     <button id="spectate-next-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
                         <i class="fas fa-chevron-right"></i>
                     </button>
@@ -236,7 +332,6 @@
                     等待連線中
                 </div>
 
-                <!-- 觀戰 Mini 網格容器 -->
                 <div class="w-full max-w-[240px] aspect-square bg-board rounded-xl p-2 shadow-inner flex items-center justify-center relative" id="spectate-grid-container">
                     <div id="spectate-mini-grid" class="w-full h-full grid gap-1.5">
                         <div class="text-center text-amber-100 text-xs flex items-center justify-center h-full font-medium">
@@ -297,9 +392,6 @@
                     <button id="undo-btn" class="btn-action bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
                         <i class="fas fa-undo"></i> 復原
                     </button>
-                    <button id="ai-btn" class="btn-action bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1">
-                        <i class="fas fa-robot"></i> <span id="ai-btn-text">AI 代打</span>
-                    </button>
                     <button id="restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1">
                         <i class="fas fa-sync-alt"></i> 重來
                     </button>
@@ -309,7 +401,7 @@
             <!-- 計分板與個人資訊 -->
             <div class="w-full max-w-md flex justify-between items-center mb-2 px-1">
                 <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <img id="game-player-avatar" class="w-6 h-6 rounded-full border border-amber-400 object-cover" src="https://api.dicebear.com/7.x/bottts/svg?seed=player" alt="Avatar">
                     <span id="player-self-name" class="font-extrabold text-amber-900 text-sm">我 (玩家)</span>
                 </div>
                 <div class="flex gap-2">
@@ -360,21 +452,47 @@
             </div>
         </section>
 
-        <!-- ==================== 右欄：即時排行榜 (3 Cols) ==================== -->
+        <!-- ==================== 右欄：即時排行榜 & 房間對戰聊天室 (3 Cols) ==================== -->
         <section class="lg:col-span-3 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[480px]">
-            <div class="flex justify-between items-center pb-2.5 border-b border-amber-100 mb-3">
+            <!-- 排行榜區塊 -->
+            <div class="flex justify-between items-center pb-2 border-b border-amber-100 mb-2">
                 <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold text-sm">
+                    <div class="w-6 h-6 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold text-xs">
                         <i class="fas fa-trophy"></i>
                     </div>
-                    <h2 class="font-extrabold text-amber-900 text-base">即時排行榜</h2>
+                    <h2 class="font-extrabold text-amber-900 text-sm">即時排行榜</h2>
                 </div>
             </div>
 
-            <!-- 排行榜列表 -->
-            <div id="leaderboard-list" class="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[400px] scrollbar-thin">
-                <div class="text-xs text-amber-800/60 text-center py-6">
+            <div id="leaderboard-list" class="flex-1 flex flex-col gap-1.5 overflow-y-auto max-h-[160px] scrollbar-thin mb-3">
+                <div class="text-xs text-amber-800/60 text-center py-4">
                     連線中... 點擊右上角「複製連結」傳給好友即可連線對戰！
+                </div>
+            </div>
+
+            <!-- 全新房間即時聊天室區塊 -->
+            <div class="border-t border-amber-200/80 pt-2.5 flex-1 flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-1.5">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 class="font-extrabold text-amber-900 text-xs">房間即時聊天</h3>
+                    </div>
+                    <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">WebRTC P2P</span>
+                </div>
+
+                <!-- 聊天紀錄訊息框 -->
+                <div id="chat-messages-log" class="flex-1 bg-amber-50/70 border border-amber-200 rounded-xl p-2 space-y-1.5 overflow-y-auto max-h-[180px] min-h-[120px] scrollbar-thin text-xs">
+                    <div class="text-[10px] text-amber-800/60 text-center italic py-2">歡迎來到對戰聊天室，發送訊息讓好友看見！</div>
+                </div>
+
+                <!-- 聊天訊息輸入框與發送鈕 -->
+                <div class="flex gap-1.5 mt-2">
+                    <input type="text" id="chat-input" class="flex-1 bg-white border border-amber-300 rounded-xl px-3 py-1.5 text-xs text-amber-950 font-bold focus:outline-none focus:border-amber-500" placeholder="輸入聊天訊息..." maxlength="60">
+                    <button id="send-chat-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow flex items-center justify-center">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
             </div>
         </section>
@@ -506,6 +624,23 @@
                 osc.start();
                 osc.stop(this.ctx.currentTime + 0.15);
             }
+
+            playChatChime() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(659.25, this.ctx.currentTime + 0.1); // E5
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            }
         }
 
         let tileUniqueId = 1;
@@ -538,12 +673,15 @@
                 this.score = 0;
                 this.moveCount = 0;
                 this.bestScore = parseInt(localStorage.getItem('2048_best_score') || '0', 10);
+                this.bestTile = parseInt(localStorage.getItem('2048_best_tile') || '2', 10);
                 this.history = [];
                 this.won = false;
                 this.keepPlaying = false;
                 this.over = false;
-                this.aiInterval = null;
                 this.sound = new SoundEngine();
+
+                // Google User Authentication State
+                this.currentUser = JSON.parse(localStorage.getItem('2048_google_user') || 'null');
 
                 // WebRTC PeerJS & Room State
                 this.peer = null;
@@ -555,8 +693,8 @@
                 this.roomPlayers = {}; // { peerId: playerState }
                 this.heartbeatTimer = null;
 
-                // 隨機強大自動命名系統
-                this.playerName = localStorage.getItem('2048_player_name') || this.generateSmartName();
+                // 隨機強大自動命名系統 (優先使用 Google 暱稱)
+                this.playerName = this.currentUser ? this.currentUser.name : (localStorage.getItem('2048_player_name') || this.generateSmartName());
 
                 this.gridBg = document.getElementById('grid-background');
                 this.tileContainer = document.getElementById('tile-container');
@@ -567,9 +705,130 @@
                 this.overlay = document.getElementById('game-overlay');
                 this.undoBtn = document.getElementById('undo-btn');
 
+                this.initAuth();
                 this.initUI();
                 this.initP2P();
                 this.restart();
+            }
+
+            initAuth() {
+                this.updateAuthUI();
+
+                // Google Sign-In SDK Initialization
+                window.handleGoogleCredentialResponse = (response) => {
+                    try {
+                        const payload = this.parseJwt(response.credential);
+                        if (payload) {
+                            this.currentUser = {
+                                name: payload.name,
+                                email: payload.email,
+                                picture: payload.picture
+                            };
+                            localStorage.setItem('2048_google_user', JSON.stringify(this.currentUser));
+                            this.playerName = payload.name;
+                            localStorage.setItem('2048_player_name', this.playerName);
+                            this.updateAuthUI();
+                            alert(`登入成功！歡迎，${payload.name}`);
+                        }
+                    } catch(e) {
+                        console.error('Google Auth Error:', e);
+                    }
+                };
+
+                const googleBtn = document.getElementById('google-login-btn');
+                const portalGoogleBtn = document.getElementById('portal-google-btn');
+                const logoutBtn = document.getElementById('user-logout-btn');
+
+                const triggerGoogleAuth = () => {
+                    if (window.google && window.google.accounts) {
+                        window.google.accounts.id.initialize({
+                            client_id: "9283749283-demo.apps.googleusercontent.com",
+                            callback: window.handleGoogleCredentialResponse
+                        });
+                        window.google.accounts.id.prompt();
+                    } else {
+                        const demoName = prompt("請輸入您的 Google 暱稱進行快速登入：", "Google玩家_" + Math.floor(Math.random()*90+10));
+                        if (demoName) {
+                            this.currentUser = {
+                                name: demoName,
+                                email: `${demoName}@gmail.com`,
+                                picture: `https://api.dicebear.com/7.x/bottts/svg?seed=${demoName}`
+                            };
+                            localStorage.setItem('2048_google_user', JSON.stringify(this.currentUser));
+                            this.playerName = demoName;
+                            localStorage.setItem('2048_player_name', this.playerName);
+                            this.updateAuthUI();
+                        }
+                    }
+                };
+
+                if (googleBtn) googleBtn.addEventListener('click', triggerGoogleAuth);
+                if (portalGoogleBtn) portalGoogleBtn.addEventListener('click', triggerGoogleAuth);
+                if (logoutBtn) logoutBtn.addEventListener('click', () => {
+                    this.currentUser = null;
+                    localStorage.removeItem('2048_google_user');
+                    this.playerName = this.generateSmartName();
+                    localStorage.setItem('2048_player_name', this.playerName);
+                    this.updateAuthUI();
+                });
+            }
+
+            parseJwt(token) {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                return JSON.parse(jsonPayload);
+            }
+
+            updateAuthUI() {
+                const avatarImg = document.getElementById('user-avatar-img');
+                const displayName = document.getElementById('user-display-name');
+                const loginStatus = document.getElementById('user-login-status');
+                const googleBtn = document.getElementById('google-login-btn');
+                const logoutBtn = document.getElementById('user-logout-btn');
+
+                const portalAvatar = document.getElementById('portal-user-avatar');
+                const portalName = document.getElementById('portal-user-name');
+                const portalDesc = document.getElementById('portal-user-desc');
+                const gameAvatar = document.getElementById('game-player-avatar');
+
+                const avatarUrl = this.currentUser ? this.currentUser.picture : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(this.playerName)}`;
+
+                if (avatarImg) avatarImg.src = avatarUrl;
+                if (portalAvatar) portalAvatar.src = avatarUrl;
+                if (gameAvatar) gameAvatar.src = avatarUrl;
+
+                if (this.currentUser) {
+                    if (displayName) displayName.textContent = this.currentUser.name;
+                    if (loginStatus) { loginStatus.textContent = 'Google 已登入'; loginStatus.className = 'text-[9px] font-bold text-emerald-400'; }
+                    if (googleBtn) googleBtn.classList.add('hidden');
+                    if (logoutBtn) logoutBtn.classList.remove('hidden');
+                    if (portalName) portalName.textContent = this.currentUser.name;
+                    if (portalDesc) portalDesc.textContent = this.currentUser.email;
+                } else {
+                    if (displayName) displayName.textContent = this.playerName;
+                    if (loginStatus) { loginStatus.textContent = '未登入'; loginStatus.className = 'text-[9px] font-bold text-amber-300'; }
+                    if (googleBtn) googleBtn.classList.remove('hidden');
+                    if (logoutBtn) logoutBtn.classList.add('hidden');
+                    if (portalName) portalName.textContent = this.playerName;
+                    if (portalDesc) portalDesc.textContent = '未登入帳號';
+                }
+
+                document.getElementById('player-self-name').textContent = this.playerName;
+                document.getElementById('nickname-input').value = this.playerName;
+                document.getElementById('portal-stat-score').textContent = this.bestScore;
+                document.getElementById('portal-stat-tile').textContent = this.bestTile;
+            }
+
+            showPortalView() {
+                document.getElementById('portal-view').classList.remove('hidden');
+                document.getElementById('game-view').classList.add('hidden');
+                this.updateAuthUI();
+            }
+
+            showGameView() {
+                document.getElementById('portal-view').classList.add('hidden');
+                document.getElementById('game-view').classList.remove('hidden');
             }
 
             generateSmartName() {
@@ -606,6 +865,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const roomFromUrl = urlParams.get('room');
                 if (roomFromUrl) {
+                    this.showGameView();
                     this.autoConnectRoom(roomFromUrl.toUpperCase());
                 } else {
                     this.createRoom(Math.random().toString(36).substring(2, 8).toUpperCase(), true);
@@ -712,7 +972,6 @@
 
             onP2PDataReceived(conn, data) {
                 if (data.type === 'JOIN') {
-                    // 防止房間內同名重疊
                     const uniqueName = this.getUniquePlayerName(data.name);
                     const pData = data.playerData || {
                         id: conn.peer, name: uniqueName, score: 0, maxTile: 2, status: 'playing', isHost: false, grid: null
@@ -744,7 +1003,53 @@
                 } else if (data.type === 'TAUNT') {
                     this.sound.playEmojiSound();
                     this.displayTauntBubble(data.playerName, data.text);
+                } else if (data.type === 'CHAT') {
+                    this.sound.playChatChime();
+                    this.addChatMessage(data.senderName, data.text, data.time, false);
+                    if (this.isHost) {
+                        Object.values(this.connections).forEach(otherConn => {
+                            if (otherConn.peer !== conn.peer && otherConn.open) {
+                                otherConn.send(data);
+                            }
+                        });
+                    }
                 }
+            }
+
+            sendChatMessage() {
+                const input = document.getElementById('chat-input');
+                const text = input.value.trim();
+                if (!text) return;
+                input.value = '';
+
+                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                this.addChatMessage(this.playerName, text, timeStr, true);
+
+                const chatPayload = {
+                    type: 'CHAT',
+                    senderName: this.playerName,
+                    text: text,
+                    time: timeStr
+                };
+
+                Object.values(this.connections).forEach(conn => {
+                    if (conn && conn.open) conn.send(chatPayload);
+                });
+            }
+
+            addChatMessage(sender, text, time, isSelf) {
+                const log = document.getElementById('chat-messages-log');
+                const msgEl = document.createElement('div');
+                msgEl.className = `flex flex-col p-1.5 rounded-xl border ${isSelf ? 'bg-amber-100/90 border-amber-300 self-end text-right ml-4' : 'bg-white border-amber-200 self-start mr-4'}`;
+                msgEl.innerHTML = `
+                    <div class="flex items-center gap-1 text-[10px] font-bold ${isSelf ? 'justify-end text-amber-900' : 'text-amber-800'}">
+                        <span>${sender}</span>
+                        <span class="text-[8px] opacity-60">${time}</span>
+                    </div>
+                    <div class="text-xs font-bold text-amber-950 mt-0.5 break-words">${text}</div>
+                `;
+                log.appendChild(msgEl);
+                log.scrollTop = log.scrollHeight;
             }
 
             broadcastP2PState() {
@@ -870,7 +1175,6 @@
             }
 
             restart() {
-                this.stopAI();
                 this.size = parseInt(document.getElementById('grid-size-select').value, 10);
                 this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
                 this.tiles = [];
@@ -993,6 +1297,11 @@
                                 mergedTotalScore += mergedValue;
                                 mergedAny = true;
                                 moved = true;
+
+                                if (mergedValue > this.bestTile) {
+                                    this.bestTile = mergedValue;
+                                    localStorage.setItem('2048_best_tile', this.bestTile.toString());
+                                }
                             } else {
                                 if (r !== positions.farthest.r || c !== positions.farthest.c) {
                                     this.grid[r][c] = null;
@@ -1166,134 +1475,6 @@
                 this.overlay.classList.add('opacity-0', 'pointer-events-none');
             }
 
-            toggleAI() {
-                if (this.aiInterval) {
-                    this.stopAI();
-                } else {
-                    document.getElementById('ai-btn-text').textContent = '停止 AI';
-                    document.getElementById('ai-btn').classList.replace('bg-indigo-600', 'bg-rose-600');
-                    this.aiInterval = setInterval(() => {
-                        if (this.over) { this.stopAI(); return; }
-                        const bestDir = this.getBestMoveAI();
-                        if (bestDir !== -1) this.move(bestDir);
-                        else this.stopAI();
-                    }, 110);
-                }
-            }
-
-            stopAI() {
-                if (this.aiInterval) {
-                    clearInterval(this.aiInterval);
-                    this.aiInterval = null;
-                    document.getElementById('ai-btn-text').textContent = 'AI 代打';
-                    document.getElementById('ai-btn').classList.replace('bg-rose-600', 'bg-indigo-600');
-                }
-            }
-
-            getBestMoveAI() {
-                const gridCopy = Array(this.size).fill(null).map(() => Array(this.size).fill(0));
-                for (let r = 0; r < this.size; r++) {
-                    for (let c = 0; c < this.size; c++) {
-                        if (this.grid[r][c]) gridCopy[r][c] = this.grid[r][c].value;
-                    }
-                }
-                const depth = this.size <= 4 ? 3 : 2;
-                const result = this.expectimax(gridCopy, depth, true);
-                if (result.move !== -1 && result.move !== undefined) return result.move;
-                for (let dir = 0; dir < 4; dir++) {
-                    if (this.simulateMoveOnGrid(gridCopy, dir).moved) return dir;
-                }
-                return -1;
-            }
-
-            expectimax(grid, depth, isPlayerTurn) {
-                if (depth === 0) return { score: this.evaluateGrid(grid) };
-                if (isPlayerTurn) {
-                    let bestScore = -Infinity, bestMove = -1;
-                    for (let dir = 0; dir < 4; dir++) {
-                        const sim = this.simulateMoveOnGrid(grid, dir);
-                        if (sim.moved) {
-                            const res = this.expectimax(sim.grid, depth - 1, false);
-                            if (res.score > bestScore) { bestScore = res.score; bestMove = dir; }
-                        }
-                    }
-                    return { score: bestScore === -Infinity ? this.evaluateGrid(grid) : bestScore, move: bestMove };
-                } else {
-                    const emptyCells = [];
-                    for (let r = 0; r < this.size; r++) {
-                        for (let c = 0; c < this.size; c++) {
-                            if (grid[r][c] === 0) emptyCells.push({ r, c });
-                        }
-                    }
-                    if (emptyCells.length === 0) return { score: this.evaluateGrid(grid) };
-                    const sampleCells = emptyCells.length > 5 ? emptyCells.slice(0, 5) : emptyCells;
-                    let totalScore = 0;
-                    for (const cell of sampleCells) {
-                        grid[cell.r][cell.c] = 2;
-                        const res2 = this.expectimax(grid, depth - 1, true);
-                        grid[cell.r][cell.c] = 4;
-                        const res4 = this.expectimax(grid, depth - 1, true);
-                        grid[cell.r][cell.c] = 0;
-                        totalScore += (res2.score * 0.9 + res4.score * 0.1);
-                    }
-                    return { score: totalScore / sampleCells.length };
-                }
-            }
-
-            evaluateGrid(grid) {
-                let score = 0, emptyCount = 0;
-                for (let r = 0; r < this.size; r++) {
-                    for (let c = 0; c < this.size; c++) {
-                        if (grid[r][c] === 0) emptyCount++;
-                    }
-                }
-                score += emptyCount * emptyCount * 200;
-                let weights = [
-                    [65536, 32768, 16384, 8192],
-                    [512,   1024,  2048,  4096],
-                    [256,   128,   64,    32],
-                    [2,     4,     8,     16]
-                ];
-                for (let r = 0; r < this.size; r++) {
-                    for (let c = 0; c < this.size; c++) {
-                        if (grid[r][c] > 0) score += grid[r][c] * (weights[r] ? weights[r][c] || 1 : 1);
-                    }
-                }
-                return score;
-            }
-
-            simulateMoveOnGrid(inputGrid, dir) {
-                const vectors = [{ r: -1, c: 0 }, { r: 0, c: 1 }, { r: 1, c: 0 }, { r: 0, c: -1 }];
-                const vector = vectors[dir];
-                const gridCopy = inputGrid.map(row => [...row]);
-                const merged = Array(this.size).fill(false).map(() => Array(this.size).fill(false));
-                let moved = false, gainedScore = 0;
-                const traversals = this.buildTraversals(vector);
-                traversals.r.forEach(r => {
-                    traversals.c.forEach(c => {
-                        if (gridCopy[r][c] !== 0) {
-                            let currR = r, currC = c;
-                            while (true) {
-                                const nextR = currR + vector.r, nextC = currC + vector.c;
-                                if (nextR < 0 || nextR >= this.size || nextC < 0 || nextC >= this.size) break;
-                                if (gridCopy[nextR][nextC] === 0) {
-                                    gridCopy[nextR][nextC] = gridCopy[currR][currC];
-                                    gridCopy[currR][currC] = 0;
-                                    currR = nextR; currC = nextC; moved = true;
-                                } else if (gridCopy[nextR][nextC] === gridCopy[currR][currC] && !merged[nextR][nextC]) {
-                                    gridCopy[nextR][nextC] *= 2;
-                                    merged[nextR][nextC] = true;
-                                    gainedScore += gridCopy[nextR][nextC];
-                                    gridCopy[currR][currC] = 0;
-                                    moved = true; break;
-                                } else break;
-                            }
-                        }
-                    });
-                });
-                return { moved, grid: gridCopy, score: gainedScore };
-            }
-
             renderSpectateList() {
                 const players = Object.values(this.roomPlayers).filter(p => p.id !== this.myPeerId);
                 document.getElementById('spectate-count-badge').textContent = `在線玩家: ${Object.keys(this.roomPlayers).length}`;
@@ -1425,13 +1606,38 @@
                     touchStartX = 0; touchStartY = 0;
                 }, { passive: true });
 
+                // 導覽列大廳主頁按鈕
+                document.getElementById('nav-home-btn').addEventListener('click', () => this.showPortalView());
+
+                // 大廳卡片點擊事件
+                document.getElementById('portal-create-room-btn').addEventListener('click', () => {
+                    this.showGameView();
+                    document.getElementById('room-modal').classList.remove('opacity-0', 'pointer-events-none');
+                    document.getElementById('room-modal').classList.add('opacity-100');
+                });
+
+                document.getElementById('portal-single-btn').addEventListener('click', () => {
+                    this.showGameView();
+                    this.restart();
+                });
+
+                document.getElementById('portal-reset-stat-btn').addEventListener('click', () => {
+                    if (confirm('確定要重置本地最高分紀錄嗎？')) {
+                        localStorage.removeItem('2048_best_score');
+                        localStorage.removeItem('2048_best_tile');
+                        this.bestScore = 0;
+                        this.bestTile = 2;
+                        this.updateAuthUI();
+                        alert('已重置紀錄！');
+                    }
+                });
+
                 document.getElementById('spectate-prev-btn').addEventListener('click', () => this.spectatePrevPlayer());
                 document.getElementById('spectate-next-btn').addEventListener('click', () => this.spectateNextPlayer());
 
                 document.getElementById('restart-btn').addEventListener('click', () => this.restart());
                 document.getElementById('overlay-restart-btn').addEventListener('click', () => this.restart());
                 document.getElementById('undo-btn').addEventListener('click', () => this.undo());
-                document.getElementById('ai-btn').addEventListener('click', () => this.toggleAI());
                 document.getElementById('grid-size-select').addEventListener('change', () => this.restart());
                 document.getElementById('sound-btn').addEventListener('click', () => {
                     this.sound.enabled = !this.sound.enabled;
@@ -1442,6 +1648,15 @@
                 document.getElementById('btn-right').addEventListener('click', () => this.move(1));
                 document.getElementById('btn-down').addEventListener('click', () => this.move(2));
                 document.getElementById('btn-left').addEventListener('click', () => this.move(3));
+
+                // 聊天輸入發送事件
+                document.getElementById('send-chat-btn').addEventListener('click', () => this.sendChatMessage());
+                document.getElementById('chat-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.sendChatMessage();
+                    }
+                });
 
                 document.getElementById('random-name-btn').addEventListener('click', () => {
                     const newName = this.generateSmartName();
@@ -1472,13 +1687,17 @@
                     roomModal.classList.remove('opacity-100');
                     roomModal.classList.add('opacity-0', 'pointer-events-none');
                 });
-                document.getElementById('action-create-room-btn').addEventListener('click', () => this.createRoom());
+                document.getElementById('action-create-room-btn').addEventListener('click', () => {
+                    this.showGameView();
+                    this.createRoom();
+                });
                 document.getElementById('action-join-room-btn').addEventListener('click', () => {
                     document.getElementById('join-code-container').classList.remove('hidden');
                 });
                 document.getElementById('submit-join-room-btn').addEventListener('click', () => {
                     const code = document.getElementById('room-code-input').value.trim().toUpperCase();
                     if (!code) { alert('請輸入房間號！'); return; }
+                    this.showGameView();
                     this.autoConnectRoom(code);
                 });
             }
