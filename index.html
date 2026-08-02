@@ -194,8 +194,8 @@
             <div id="room-badge" class="hidden items-center bg-amber-950/80 border-2 border-amber-500/80 px-4 py-1.5 rounded-2xl text-xs sm:text-sm shadow-inner">
                 <span class="text-amber-300 font-bold mr-2">房間號:</span>
                 <span id="room-code-display" class="font-extrabold tracking-widest text-white text-base mr-3">-----</span>
-                <button id="copy-room-btn" class="btn-action bg-amber-600 hover:bg-amber-500 text-white font-extrabold px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
-                    <i class="fas fa-copy"></i> 複製連結
+                <button id="open-share-modal-btn" class="btn-action bg-amber-600 hover:bg-amber-500 text-white font-extrabold px-3 py-1 rounded-xl text-xs flex items-center gap-1.5 shadow">
+                    <i class="fas fa-share-alt"></i> 分享房間
                 </button>
             </div>
         </div>
@@ -218,7 +218,7 @@
         </div>
     </header>
 
-    <!-- ==================== View 1: 遊戲大廳主頁 Portal (充實大氣寬幅) ==================== -->
+    <!-- ==================== View 1: 遊戲大廳主頁 Portal ==================== -->
     <main id="portal-view" class="w-full max-w-7xl mx-auto flex-1 flex flex-col justify-center items-center gap-8 py-6">
         <!-- 歡迎視覺面板 -->
         <div class="w-full bg-gradient-to-r from-amber-800 via-amber-900 to-amber-950 text-white rounded-3xl p-8 sm:p-10 shadow-2xl border-2 border-amber-600 flex flex-col md:flex-row justify-between items-center gap-8">
@@ -243,7 +243,7 @@
             </div>
         </div>
 
-        <!-- 模式選擇 3 大卡片 (大尺寸與飽滿間距) -->
+        <!-- 模式選擇 3 大卡片 -->
         <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- 卡片 1: 多人即時對戰 -->
             <div class="bg-white/95 border-2 border-amber-300 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all flex flex-col justify-between group">
@@ -298,7 +298,7 @@
         </div>
     </main>
 
-    <!-- ==================== View 2: 主要遊戲戰場 (大氣黃金比例排版) ==================== -->
+    <!-- ==================== View 2: 主要遊戲戰場 ==================== -->
     <div id="game-view" class="hidden w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1 items-stretch">
         
         <!-- ==================== 左欄：即時觀戰 Panel (3 Cols) ==================== -->
@@ -339,7 +339,7 @@
                 </div>
             </div>
 
-            <!-- 即時觀戰主棋盤畫面 (擴大比例) -->
+            <!-- 即時觀戰主棋盤畫面 -->
             <div class="flex-1 flex flex-col items-center justify-center bg-amber-50/80 border-2 border-amber-200/80 rounded-2xl p-4 relative min-h-[260px]">
                 <div id="spectate-target-status" class="mb-3 text-xs font-extrabold px-3.5 py-1 rounded-full bg-amber-200 text-amber-900 shadow-sm">
                     等待連線中
@@ -355,7 +355,7 @@
             </div>
         </section>
 
-        <!-- ==================== 中欄：個人遊戲主戰場 (6 Cols, 巨幅 2048 棋盤) ==================== -->
+        <!-- ==================== 中欄：個人遊戲主戰場 (6 Cols) ==================== -->
         <section class="lg:col-span-6 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-6 shadow-lg flex flex-col items-center justify-between">
             
             <!-- 互動嗆聲與表情浮動吧 -->
@@ -432,7 +432,7 @@
                 </div>
             </div>
 
-            <!-- 主 2048 棋盤容器 (最大放大至 500px 霸氣展現) -->
+            <!-- 主 2048 棋盤容器 -->
             <main class="w-full max-w-[500px] relative aspect-square bg-board rounded-3xl p-3 sm:p-4 shadow-2xl flex flex-col justify-between board-container" id="board-container">
                 <div id="grid-background" class="w-full h-full grid gap-3 sm:gap-3.5"></div>
                 <div id="tile-container" class="absolute inset-3 sm:inset-4 pointer-events-none"></div>
@@ -468,7 +468,7 @@
             </div>
         </section>
 
-        <!-- ==================== 右欄：即時排行榜 & 房間對戰聊天室 (3 Cols, 飽滿垂直拉伸) ==================== -->
+        <!-- ==================== 右欄：即時排行榜 & 房間對戰聊天室 (3 Cols) ==================== -->
         <section class="lg:col-span-3 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-5 shadow-lg flex flex-col justify-between gap-4">
             <!-- 排行榜區塊 -->
             <div class="flex flex-col">
@@ -488,7 +488,7 @@
                 </div>
             </div>
 
-            <!-- 房間即時聊天室區塊 (擴大聊天視窗) -->
+            <!-- 房間即時聊天室區塊 -->
             <div class="border-t-2 border-amber-200/80 pt-3 flex-1 flex flex-col justify-between min-h-[260px]">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center gap-2">
@@ -500,7 +500,7 @@
                     <span class="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">WebRTC P2P</span>
                 </div>
 
-                <!-- 聊天紀錄訊息框 (大幅擴大高度) -->
+                <!-- 聊天紀錄訊息框 -->
                 <div id="chat-messages-log" class="flex-1 bg-amber-50/80 border border-amber-200 rounded-2xl p-3 space-y-2 overflow-y-auto max-h-[280px] min-h-[160px] scrollbar-thin text-xs">
                     <div class="text-xs text-amber-800/60 text-center italic py-4 font-medium">歡迎來到對戰聊天室，發送訊息讓好友看見！</div>
                 </div>
@@ -591,6 +591,48 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== Modal 3: 原生多功能分享彈窗 Share Modal ==================== -->
+    <div id="share-modal" class="fixed inset-0 bg-amber-950/75 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-300 relative text-center">
+            <button id="close-share-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-amber-900 text-xl font-bold p-2">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="w-14 h-14 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 font-extrabold shadow-inner">
+                <i class="fas fa-share-alt"></i>
+            </div>
+            <h3 class="text-2xl font-black text-amber-950">邀請好友連線對戰</h3>
+            <p class="text-xs text-amber-800/80 mt-1 mb-4">房間號：<span id="share-modal-room-code" class="font-extrabold text-amber-950 text-base tracking-widest">------</span></p>
+
+            <!-- QR Code 即時產出區域 -->
+            <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 inline-block mb-4 shadow-inner">
+                <img id="share-qr-code-img" class="w-36 h-36 rounded-xl mx-auto border border-amber-300 shadow-sm" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=2048" alt="QR Code">
+                <div class="text-[11px] text-amber-800 font-bold mt-1.5"><i class="fas fa-qrcode mr-1"></i>掃描 QR Code 即可連線對戰</div>
+            </div>
+
+            <!-- 熟悉的原生/社群一鍵分享按鈕列 -->
+            <div class="grid grid-cols-3 gap-2.5 mb-4">
+                <button id="share-line-btn" class="btn-action bg-[#00B900] hover:bg-[#009900] text-white font-extrabold py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow">
+                    <i class="fab fa-line text-base"></i> LINE
+                </button>
+                <button id="share-fb-btn" class="btn-action bg-[#1877F2] hover:bg-[#166fe5] text-white font-extrabold py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow">
+                    <i class="fab fa-facebook text-base"></i> Facebook
+                </button>
+                <button id="share-native-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow">
+                    <i class="fas fa-share-nodes text-base"></i> 原生分享
+                </button>
+            </div>
+
+            <!-- 複製連結網址列 -->
+            <div class="flex gap-2 bg-amber-50 p-1.5 rounded-2xl border border-amber-200 shadow-inner">
+                <input type="text" id="share-url-input" class="flex-1 bg-white border border-amber-300 rounded-xl px-3 py-2 text-xs text-amber-950 font-bold focus:outline-none" readonly>
+                <button id="share-copy-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow flex items-center gap-1.5">
+                    <i class="fas fa-copy"></i> 複製網址
+                </button>
             </div>
         </div>
     </div>
@@ -885,6 +927,31 @@
                 }
             }
 
+            openShareModal() {
+                if (!this.roomId) return;
+                const shareModal = document.getElementById('share-modal');
+                const shareUrl = `${window.location.origin}${window.location.pathname}?room=${this.roomId}`;
+                
+                if (document.getElementById('share-modal-room-code')) document.getElementById('share-modal-room-code').textContent = this.roomId;
+                if (document.getElementById('share-url-input')) document.getElementById('share-url-input').value = shareUrl;
+                if (document.getElementById('share-qr-code-img')) {
+                    document.getElementById('share-qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}`;
+                }
+
+                if (shareModal) {
+                    shareModal.classList.remove('opacity-0', 'pointer-events-none');
+                    shareModal.classList.add('opacity-100');
+                }
+            }
+
+            closeShareModal() {
+                const shareModal = document.getElementById('share-modal');
+                if (shareModal) {
+                    shareModal.classList.remove('opacity-100');
+                    shareModal.classList.add('opacity-0', 'pointer-events-none');
+                }
+            }
+
             generateSmartName() {
                 const prefixes = ['神探', '極速', '熱血', '星空', '極限', '無敵', '天才', '狂暴', '王牌', '飛速', '幻影', '超能', '閃電', '破風'];
                 const suffixes = ['小吉', '勇者', '棋手', '挑戰者', '大師', '戰神', '玩家', '高手', '小霸王', '先鋒', '遊俠', '騎士'];
@@ -926,6 +993,11 @@
 
             autoConnectRoom(code) {
                 this.closeRoomModal();
+                // 每次進房前完全清空歷史舊房間的灰塵紀錄，防止同名殘留！
+                this.roomPlayers = {};
+                this.connections = {};
+                this.spectateTargetId = null;
+
                 const nicknameInput = document.getElementById('nickname-input');
                 const rawName = nicknameInput ? nicknameInput.value.trim() : this.playerName;
                 this.playerName = this.getUniquePlayerName(rawName || this.playerName);
@@ -974,6 +1046,11 @@
 
             createRoom(customCode, silent = false) {
                 this.closeRoomModal();
+                // 每次建房前完全清空歷史舊房間的灰塵紀錄，100% 杜絕同名重複登記！
+                this.roomPlayers = {};
+                this.connections = {};
+                this.spectateTargetId = null;
+
                 const nicknameInput = document.getElementById('nickname-input');
                 const rawName = nicknameInput ? nicknameInput.value.trim() : this.playerName;
                 this.playerName = this.getUniquePlayerName(rawName || this.playerName);
@@ -996,7 +1073,7 @@
                             this.startHeartbeat();
 
                             if (!silent) {
-                                alert(`房間創建成功！房間號：${code}\n點擊右上角「複製連結」傳給好友即可開打與觀戰！`);
+                                this.openShareModal();
                             }
                         });
 
@@ -1590,7 +1667,7 @@
                     if (targetStatus) targetStatus.textContent = '等待玩家加入';
                     if (miniGrid) {
                         miniGrid.style.gridTemplateColumns = `repeat(4, minmax(0, 1fr))`;
-                        miniGrid.innerHTML = `<div class="col-span-4 text-center text-amber-800/50 text-xs py-10 font-bold">點擊右上角複製連結邀請好友加入觀戰！</div>`;
+                        miniGrid.innerHTML = `<div class="col-span-4 text-center text-amber-800/50 text-xs py-10 font-bold">點擊右上角「分享房間」傳給好友加入觀戰！</div>`;
                     }
                     if (scoreVal) scoreVal.textContent = player ? player.score : 0;
                     if (maxTileVal) maxTileVal.textContent = player ? player.maxTile : 0;
@@ -1800,13 +1877,63 @@
                     });
                 }
 
-                const copyRoomBtn = document.getElementById('copy-room-btn');
-                if (copyRoomBtn) {
-                    copyRoomBtn.addEventListener('click', () => {
-                        if (!this.roomId) return;
-                        const shareUrl = `${window.location.origin}${window.location.pathname}?room=${this.roomId}`;
+                // 複製 / 開啟分享彈窗事件
+                const openShareBtn = document.getElementById('open-share-modal-btn');
+                if (openShareBtn) openShareBtn.addEventListener('click', () => this.openShareModal());
+
+                const closeShareBtn = document.getElementById('close-share-modal-btn');
+                if (closeShareBtn) closeShareBtn.addEventListener('click', () => this.closeShareModal());
+
+                const shareModal = document.getElementById('share-modal');
+                if (shareModal) {
+                    shareModal.addEventListener('click', (e) => {
+                        if (e.target === shareModal) this.closeShareModal();
+                    });
+                }
+
+                // 社群分享按鈕行為
+                const shareLineBtn = document.getElementById('share-line-btn');
+                if (shareLineBtn) {
+                    shareLineBtn.addEventListener('click', () => {
+                        const shareUrl = document.getElementById('share-url-input')?.value || window.location.href;
+                        const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(`快來和我一起玩 2048 多人連線對戰！\n${shareUrl}`)}`;
+                        window.open(lineUrl, '_blank');
+                    });
+                }
+
+                const shareFbBtn = document.getElementById('share-fb-btn');
+                if (shareFbBtn) {
+                    shareFbBtn.addEventListener('click', () => {
+                        const shareUrl = document.getElementById('share-url-input')?.value || window.location.href;
+                        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+                        window.open(fbUrl, '_blank');
+                    });
+                }
+
+                const shareNativeBtn = document.getElementById('share-native-btn');
+                if (shareNativeBtn) {
+                    shareNativeBtn.addEventListener('click', () => {
+                        const shareUrl = document.getElementById('share-url-input')?.value || window.location.href;
+                        if (navigator.share) {
+                            navigator.share({
+                                title: '2048 多人線上對戰大廳',
+                                text: '快來和我一起玩 2048 多人連線對戰！',
+                                url: shareUrl
+                            }).catch(() => {});
+                        } else {
+                            navigator.clipboard.writeText(shareUrl).then(() => {
+                                alert('已複製連結到剪貼簿！');
+                            });
+                        }
+                    });
+                }
+
+                const shareCopyBtn = document.getElementById('share-copy-btn');
+                if (shareCopyBtn) {
+                    shareCopyBtn.addEventListener('click', () => {
+                        const shareUrl = document.getElementById('share-url-input')?.value || window.location.href;
                         navigator.clipboard.writeText(shareUrl).then(() => {
-                            alert(`已複製邀請連結到剪貼簿！\n${shareUrl}\n直接傳給朋友點擊即可進入房間！`);
+                            alert(`已成功複製邀請連結！\n${shareUrl}\n發送給好友點擊即可直接進入房間！`);
                         });
                     });
                 }
