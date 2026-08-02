@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<!-- saved from url=(0075)file:///C:/Users/liguo/Downloads/gemini-code-1785658989694.html?room=WDAYC6 -->
-<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>2048 多人線上對戰大廳</title>
     <!-- 網頁標籤頁圖示 (Favicon) -->
-    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=&#39;http://www.w3.org/2000/svg&#39; viewBox=&#39;0 0 100 100&#39;&gt;&lt;rect width=&#39;100&#39; height=&#39;100&#39; rx=&#39;22&#39; fill=&#39;%23edc22e&#39;/&gt;&lt;text x=&#39;50&#39; y=&#39;64&#39; font-size=&#39;36&#39; font-weight=&#39;900&#39; font-family=&#39;sans-serif&#39; fill=&#39;%23ffffff&#39; text-anchor=&#39;middle&#39;&gt;2048&lt;/text&gt;&lt;/svg&gt;">
-    <!-- Tailwind CSS -->
-    <script src="./index_files/saved_resource"></script>
-    <!-- Google Fonts -->
-    <link href="./index_files/css2" rel="stylesheet">
-    <!-- PeerJS for WebRTC P2P Multiplayer -->
-    <script src="./index_files/peerjs.min.js.下載"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23edc22e'/><text x='50' y='64' font-size='36' font-weight='900' font-family='sans-serif' fill='%23ffffff' text-anchor='middle'>2048</text></svg>">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- PeerJS for WebRTC P2P Multiplayer CDN -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -369,91 +371,63 @@
         </section>
 
         <!-- ==================== 中欄：個人遊戲主戰場 (6 Cols) ==================== -->
-        <section class="lg:col-span-6 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-5 shadow-lg flex flex-col items-center gap-2">
+        <section class="lg:col-span-6 bg-white/95 rounded-3xl border-2 border-amber-300/80 p-4 sm:p-5 shadow-lg flex flex-col items-center justify-between">
             
-            <!-- 互動嗆聲與表情浮動吧 -->
-            <div class="w-full bg-amber-100/90 border-2 border-amber-300/80 rounded-2xl p-2 shadow-sm flex flex-col gap-2">
+            <!-- 頂部控制列 & 分數板 (經典緊湊佈局) -->
+            <div class="w-full flex flex-col gap-2.5">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <select id="grid-size-select" class="bg-amber-100 border border-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 focus:outline-none cursor-pointer shadow-sm">
+                            <option value="3">3 x 3</option>
+                            <option value="4" selected>4 x 4 (經典)</option>
+                            <option value="5">5 x 5</option>
+                            <option value="6">6 x 6</option>
+                        </select>
+                        <button id="sound-btn" class="btn-action bg-amber-100 border border-amber-300 text-amber-950 font-extrabold text-xs rounded-xl px-2.5 py-1.5 flex items-center gap-1 shadow-sm">
+                            <svg id="sound-icon" class="svg-icon" viewBox="0 0 576 512"><path d="M215.03 71.05L125.06 160H24c-13.26 0-24 10.74-24 24v144c0 13.25 10.74 24 24 24h101.06l89.97 88.95c15.02 14.83 40.97 4.21 40.97-17.05V88.1c0-21.22-25.92-31.85-40.97-17.05zM361 119c-8.98-8.98-23.55-8.98-32.53 0s-8.98 23.55 0 32.53C358.33 181.39 376 217.22 376 256s-17.67 74.61-47.53 104.47c-8.98 8.98-8.98 23.55 0 32.53 8.98 8.98 23.55 8.98 32.53 0C399.18 354.82 424 307.4 424 256s-24.82-98.82-63-137zM448 32c-8.98-8.98-23.55-8.98-32.53 0s-8.98 23.55 0 32.53C467.11 116.17 496 182.68 496 256s-28.89 139.83-80.53 191.47c-8.98 8.98-8.98 23.55 0 32.53 8.98 8.98 23.55 8.98 32.53 0C508.83 419.17 544 341.31 544 256s-35.17-163.17-96-224z"></path></svg>
+                        </button>
+                    </div>
+
+                    <div class="flex gap-1.5">
+                        <button id="open-room-modal-btn" class="btn-action bg-yellow-500 hover:bg-yellow-600 text-amber-950 font-extrabold text-xs rounded-xl px-3 py-1.5 shadow flex items-center gap-1">
+                            <svg class="svg-icon" viewBox="0 0 640 512"><path d="M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h72c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c-61.9 0-112 50.1-112 112v32c0 17.7 14.3 32 32 32h192c17.7 0 32-14.3 32-32v-32c0-61.9-50.1-112-112-112zm-128 0h-64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h72c6.2-47.4 34.8-87.3 75.1-109.4C217.5 263.1 201.6 256 184 256zM320 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64z"></path></svg>
+                            <span id="room-status-btn-text">房間大廳</span>
+                        </button>
+                        <button id="undo-btn" class="btn-action bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-xl px-3 py-1.5 shadow flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <svg class="svg-icon" viewBox="0 0 512 512"><path d="M212.333 224.333H12c-6.627 0-12-5.373-12-12V12C0 5.373 5.373 0 12 0h48c6.627 0 12 5.373 12 12v78.112C117.773 39.279 184.26 8 256 8c136.966 0 248 111.034 248 248S392.966 504 256 504c-64.004 0-122.42-24.286-166.527-64.18-5.141-4.651-5.46-12.598-.71-17.63l33.626-35.659c4.542-4.819 12.164-5.187 17.151-.818C173.316 416.711 212.75 432 256 432c97.2 0 176-78.8 176-176s-78.8-176-176-176c-54.67 0-103.546 24.966-136.009 64.333h72.342c6.627 0 12 5.373 12 12v48c0 6.627-5.373 12-12 12z"></path></svg>
+                            復原
+                        </button>
+                        <button id="restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold text-xs rounded-xl px-3 py-1.5 shadow flex items-center gap-1">
+                            <svg class="svg-icon" viewBox="0 0 512 512"><path d="M440.65 12.57l4 4a12 12 0 0 1 0 17L384 94.12V32a12 12 0 0 0-12-12h-8a12 12 0 0 0-12 12v108a12 12 0 0 0 12 12h108a12 12 0 0 0 12-12v-8a12 12 0 0 0-12-12h-61.7l59.6-59.6a224 224 0 1 1-316.8 0 12 12 0 0 1 17 0l5.66 5.66a12 12 0 0 1 0 17 192 192 0 1 0 271.52 0z"></path></svg>
+                            重來
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 玩家名稱與計分板 -->
                 <div class="flex justify-between items-center px-1">
-                    <span class="text-xs font-black text-amber-950 flex items-center gap-1.5">
-                        <svg class="svg-icon text-amber-600 text-sm" viewBox="0 0 496 512"><path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm80 168c17.7 0 32 14.3 32 32s-14.3 32-32 32-32-14.3-32-32 14.3-32 32-32zm-160 0c17.7 0 32 14.3 32 32s-14.3 32-32 32-32-14.3-32-32 14.3-32 32-32zm80 232c-60.8 0-113.8-37.4-135.7-90.8-3.1-7.5.9-16.1 8.5-18.7 7.5-2.6 15.8 1.1 18.2 8.6 17.6 42.8 60 72.9 109 72.9s91.4-30.1 109-72.9c2.4-5.8 8.1-9.4 14.1-9.4 1.4 0 2.8.2 4.1.7 7.6 2.6 11.6 11.2 8.5 18.7C361.8 370.6 308.8 408 248 408z"></path></svg>
-                        即時互動與嗆聲:
-                    </span>
-                    <select id="quick-taunt-select" class="bg-white border border-amber-300 text-amber-950 font-bold text-xs rounded-xl px-2.5 py-1 focus:outline-none cursor-pointer shadow-sm">
-                        <option value="" disabled="" selected="">💬 選擇嗆聲短語...</option>
-                        <option value="快要追上你囉！⚡">快要追上你囉！⚡</option>
-                        <option value="手滑犯錯了啦！😭">手滑犯錯了啦！😭</option>
-                        <option value="神操作！學著點 😎">神操作！學著點 😎</option>
-                        <option value="穩住，我們能贏！🔥">穩住，我們能贏！🔥</option>
-                        <option value="殘局交給我！👑">殘局交給我！👑</option>
-                        <option value="求求別合太快 😱">求求別合太快 😱</option>
-                    </select>
-                </div>
-                
-                <div class="flex justify-around items-center bg-white/90 rounded-xl py-1 px-3 border border-amber-200 shadow-inner">
-                    <button onclick="gameInstance.sendEmoji(&#39;😂&#39;)" class="btn-action text-xl p-1 hover:scale-125" title="笑死">😂</button>
-                    <button onclick="gameInstance.sendEmoji(&#39;🔥&#39;)" class="btn-action text-xl p-1 hover:scale-125" title="火熱">🔥</button>
-                    <button onclick="gameInstance.sendEmoji(&#39;💩&#39;)" class="btn-action text-xl p-1 hover:scale-125" title="便便">💩</button>
-                    <button onclick="gameInstance.sendEmoji(&#39;👑&#39;)" class="btn-action text-xl p-1 hover:scale-125" title="皇冠">👑</button>
-                    <button onclick="gameInstance.sendEmoji(&#39;👍&#39;)" class="btn-action text-xl p-1 hover:scale-125" title="讚">👍</button>
-                    <button onclick="gameInstance.sendEmoji(&#39;😱&#39;)" class="btn-action text-xl p-1 hover:scale-125" title="驚嚇">😱</button>
-                    <button onclick="gameInstance.sendEmoji(&#39;💣&#39;)" class="btn-action text-xl p-1 hover:scale-125" title="炸彈">💣</button>
-                    <button onclick="gameInstance.sendEmoji(&#39;🏆&#39;)" class="btn-action text-xl p-1 hover:scale-125" title="獎盃">🏆</button>
-                </div>
-            </div>
-
-            <!-- 遊戲頭部選單與控制選項 -->
-            <div class="w-full flex justify-between items-center">
-                <div class="flex gap-2">
-                    <select id="grid-size-select" class="bg-amber-100 border-2 border-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 focus:outline-none cursor-pointer shadow-sm">
-                        <option value="3">3 x 3</option>
-                        <option value="4" selected="">4 x 4 (經典)</option>
-                        <option value="5">5 x 5</option>
-                        <option value="6">6 x 6</option>
-                    </select>
-                    <button id="sound-btn" class="btn-action bg-amber-100 border-2 border-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 flex items-center gap-1.5 shadow-sm">
-                        <svg id="sound-icon" class="svg-icon" viewBox="0 0 576 512"><path d="M215.03 71.05L125.06 160H24c-13.26 0-24 10.74-24 24v144c0 13.25 10.74 24 24 24h101.06l89.97 88.95c15.02 14.83 40.97 4.21 40.97-17.05V88.1c0-21.22-25.92-31.85-40.97-17.05zM361 119c-8.98-8.98-23.55-8.98-32.53 0s-8.98 23.55 0 32.53C358.33 181.39 376 217.22 376 256s-17.67 74.61-47.53 104.47c-8.98 8.98-8.98 23.55 0 32.53 8.98 8.98 23.55 8.98 32.53 0C399.18 354.82 424 307.4 424 256s-24.82-98.82-63-137zM448 32c-8.98-8.98-23.55-8.98-32.53 0s-8.98 23.55 0 32.53C467.11 116.17 496 182.68 496 256s-28.89 139.83-80.53 191.47c-8.98 8.98-8.98 23.55 0 32.53 8.98 8.98 23.55 8.98 32.53 0C508.83 419.17 544 341.31 544 256s-35.17-163.17-96-224z"></path></svg>
-                    </button>
-                </div>
-
-                <div class="flex gap-2">
-                    <button id="open-room-modal-btn" class="btn-action bg-yellow-500 hover:bg-yellow-600 text-amber-950 font-extrabold text-xs sm:text-sm rounded-xl px-3.5 py-2 shadow-md flex items-center gap-1.5">
-                        <svg class="svg-icon" viewBox="0 0 640 512"><path d="M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 22.1 68.9 62 75.1 109.4h72c17.7 0 32-14.3 32-32v-32c0-35.3-28.7-64-64-64zm-256 0c-61.9 0-112 50.1-112 112v32c0 17.7 14.3 32 32 32h192c17.7 0 32-14.3 32-32v-32c0-61.9-50.1-112-112-112zm-128 0h-64c-35.3 0-64 28.7-64 64v32c0 17.7 14.3 32 32 32h72c6.2-47.4 34.8-87.3 75.1-109.4C217.5 263.1 201.6 256 184 256zM320 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64z"></path></svg>
-                        <span id="room-status-btn-text">房間: WDAYC6</span>
-                    </button>
-                    <button id="undo-btn" class="btn-action bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs sm:text-sm rounded-xl px-3.5 py-2 shadow-md flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed" disabled="">
-                        <svg class="svg-icon" viewBox="0 0 512 512"><path d="M212.333 224.333H12c-6.627 0-12-5.373-12-12V12C0 5.373 5.373 0 12 0h48c6.627 0 12 5.373 12 12v78.112C117.773 39.279 184.26 8 256 8c136.966 0 248 111.034 248 248S392.966 504 256 504c-64.004 0-122.42-24.286-166.527-64.18-5.141-4.651-5.46-12.598-.71-17.63l33.626-35.659c4.542-4.819 12.164-5.187 17.151-.818C173.316 416.711 212.75 432 256 432c97.2 0 176-78.8 176-176s-78.8-176-176-176c-54.67 0-103.546 24.966-136.009 64.333h72.342c6.627 0 12 5.373 12 12v48c0 6.627-5.373 12-12 12z"></path></svg>
-                        復原
-                    </button>
-                    <button id="restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold text-xs sm:text-sm rounded-xl px-3.5 py-2 shadow-md flex items-center gap-1.5">
-                        <svg class="svg-icon" viewBox="0 0 512 512"><path d="M440.65 12.57l4 4a12 12 0 0 1 0 17L384 94.12V32a12 12 0 0 0-12-12h-8a12 12 0 0 0-12 12v108a12 12 0 0 0 12 12h108a12 12 0 0 0 12-12v-8a12 12 0 0 0-12-12h-61.7l59.6-59.6a224 224 0 1 1-316.8 0 12 12 0 0 1 17 0l5.66 5.66a12 12 0 0 1 0 17 192 192 0 1 0 271.52 0z"></path></svg>
-                        重來
-                    </button>
-                </div>
-            </div>
-
-            <!-- 計分板與個人資訊 -->
-            <div class="w-full flex justify-between items-center px-1">
-                <div class="flex items-center gap-2.5">
-                    <img id="game-player-avatar" class="w-8 h-8 rounded-full border-2 border-amber-400 object-cover shadow" src="./index_files/avatar.svg" alt="Avatar">
-                    <span id="player-self-name" class="font-black text-amber-950 text-base">神探玩家</span>
-                </div>
-                <div class="flex gap-3">
-                    <div id="score-container" class="relative bg-board px-4 py-1.5 rounded-2xl text-center min-w-[90px] shadow-inner">
-                        <div class="text-[10px] uppercase font-black text-amber-100 tracking-wider">分數</div>
-                        <div id="score" class="text-lg sm:text-xl font-black text-white leading-tight">0</div>
+                    <div class="flex items-center gap-2">
+                        <img id="game-player-avatar" class="w-8 h-8 rounded-full border-2 border-amber-400 object-cover shadow" src="./index_files/avatar.svg" alt="Avatar">
+                        <span id="player-self-name" class="font-black text-amber-950 text-sm sm:text-base">神探玩家</span>
                     </div>
-                    <div class="bg-board px-4 py-1.5 rounded-2xl text-center min-w-[90px] shadow-inner">
-                        <div class="text-[10px] uppercase font-black text-amber-100 tracking-wider">最高分</div>
-                        <div id="best-score" class="text-lg sm:text-xl font-black text-white leading-tight">608</div>
+                    <div class="flex gap-2">
+                        <div id="score-container" class="relative bg-board px-3.5 py-1 rounded-xl text-center min-w-[75px] shadow-inner">
+                            <div class="text-[9px] uppercase font-black text-amber-100 tracking-wider">分數</div>
+                            <div id="score" class="text-base sm:text-lg font-black text-white leading-tight">0</div>
+                        </div>
+                        <div class="bg-board px-3.5 py-1 rounded-xl text-center min-w-[75px] shadow-inner">
+                            <div class="text-[9px] uppercase font-black text-amber-100 tracking-wider">最高分</div>
+                            <div id="best-score" class="text-base sm:text-lg font-black text-white leading-tight">0</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 主 2048 棋盤容器 -->
-            <div class="w-full flex-1 flex items-center justify-center my-2">
-                <main class="w-full max-w-[460px] aspect-square bg-board rounded-2xl p-3 sm:p-4 shadow-xl relative board-container" id="board-container">
-                    <div id="grid-background" class="w-full h-full grid gap-2.5 sm:gap-3" style="grid-template-columns: repeat(4, minmax(0px, 1fr)); grid-template-rows: repeat(4, minmax(0px, 1fr));"><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div><div class="bg-tileBg/60 rounded-xl w-full h-full"></div></div>
-                    <div id="tile-container" class="absolute inset-3 sm:inset-4 pointer-events-none"><div id="tile-wrap-1" class="tile-wrapper" style="top: 0%; left: 0%; width: 25%; height: 25%;"><div class="tile-inner tile-2">2</div></div><div id="tile-wrap-2" class="tile-wrapper" style="top: 0%; left: 25%; width: 25%; height: 25%;"><div class="tile-inner tile-16">16</div></div><div id="tile-wrap-3" class="tile-wrapper" style="top: 0%; left: 50%; width: 25%; height: 25%;"><div class="tile-inner tile-32">32</div></div><div id="tile-wrap-4" class="tile-wrapper" style="top: 0%; left: 75%; width: 25%; height: 25%;"><div class="tile-inner tile-4">4</div></div><div id="tile-wrap-5" class="tile-wrapper" style="top: 25%; left: 0%; width: 25%; height: 25%;"><div class="tile-inner tile-4">4</div></div><div id="tile-wrap-6" class="tile-wrapper" style="top: 25%; left: 25%; width: 25%; height: 25%;"><div class="tile-inner tile-16">16</div></div><div id="tile-wrap-7" class="tile-wrapper" style="top: 25%; left: 50%; width: 25%; height: 25%;"><div class="tile-inner tile-16">16</div></div><div id="tile-wrap-8" class="tile-wrapper" style="top: 25%; left: 75%; width: 25%; height: 25%;"><div class="tile-inner tile-8">8</div></div><div id="tile-wrap-9" class="tile-wrapper" style="top: 50%; left: 0%; width: 25%; height: 25%;"><div class="tile-inner tile-2">2</div></div><div id="tile-wrap-10" class="tile-wrapper" style="top: 50%; left: 50%; width: 25%; height: 25%;"><div class="tile-inner tile-64">64</div></div><div id="tile-wrap-11" class="tile-wrapper" style="top: 50%; left: 75%; width: 25%; height: 25%;"><div class="tile-inner tile-4">4</div></div><div id="tile-wrap-12" class="tile-wrapper" style="top: 75%; left: 0%; width: 25%; height: 25%;"><div class="tile-inner tile-2">2</div></div><div id="tile-wrap-13" class="tile-wrapper" style="top: 75%; left: 50%; width: 25%; height: 25%;"><div class="tile-inner tile-32">32</div></div></div>
+            <!-- 主 2048 棋盤容器 (獨立大畫面) -->
+            <div class="w-full flex items-center justify-center my-2">
+                <main class="w-full max-w-[440px] aspect-square bg-board rounded-2xl p-3 sm:p-4 shadow-xl relative board-container" id="board-container">
+                    <div id="grid-background" class="w-full h-full grid gap-2.5 sm:gap-3"></div>
+                    <div id="tile-container" class="absolute inset-3 sm:inset-4 pointer-events-none"></div>
 
                     <!-- 遊戲結束/勝負 Overlay -->
                     <div id="game-overlay" class="absolute inset-0 bg-amber-950/85 backdrop-blur-custom rounded-2xl flex flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-all duration-300 z-30">
@@ -474,21 +448,45 @@
                 </main>
             </div>
 
-            <!-- 手機十字方向按鈕 -->
-            <div class="w-full flex flex-col items-center">
-                <div class="grid grid-cols-3 gap-1.5 w-40 text-amber-950">
+            <!-- 底部緊湊嗆聲與表情浮動列 + 觸控十字鍵 -->
+            <div class="w-full flex flex-col items-center gap-2">
+                <div class="w-full bg-amber-100/80 border border-amber-300 rounded-xl px-2.5 py-1.5 flex items-center justify-between gap-2 shadow-inner">
+                    <div class="flex items-center gap-1 text-[11px] font-black text-amber-950 whitespace-nowrap">
+                        <span>💬 互動:</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-thin py-0.5">
+                        <button onclick="gameInstance.sendEmoji('😂')" class="btn-action text-lg hover:scale-125" title="笑死">😂</button>
+                        <button onclick="gameInstance.sendEmoji('🔥')" class="btn-action text-lg hover:scale-125" title="火熱">🔥</button>
+                        <button onclick="gameInstance.sendEmoji('💩')" class="btn-action text-lg hover:scale-125" title="便便">💩</button>
+                        <button onclick="gameInstance.sendEmoji('👑')" class="btn-action text-lg hover:scale-125" title="皇冠">👑</button>
+                        <button onclick="gameInstance.sendEmoji('👍')" class="btn-action text-lg hover:scale-125" title="讚">👍</button>
+                        <button onclick="gameInstance.sendEmoji('😱')" class="btn-action text-lg hover:scale-125" title="驚嚇">😱</button>
+                    </div>
+                    <select id="quick-taunt-select" class="bg-white border border-amber-300 text-amber-950 font-bold text-[11px] rounded-lg px-1.5 py-0.5 focus:outline-none cursor-pointer shadow-sm max-w-[120px]">
+                        <option value="" disabled selected>嗆聲短語...</option>
+                        <option value="快要追上你囉！⚡">快要追上你囉！⚡</option>
+                        <option value="手滑犯錯了啦！😭">手滑犯錯了啦！😭</option>
+                        <option value="神操作！學著點 😎">神操作！學著點 😎</option>
+                        <option value="穩住，我們能贏！🔥">穩住，我們能贏！🔥</option>
+                        <option value="殘局交給我！👑">殘局交給我！👑</option>
+                        <option value="求求別合太快 😱">求求別合太快 😱</option>
+                    </select>
+                </div>
+
+                <!-- 觸控箭頭按鈕 (小螢幕時顯示) -->
+                <div class="sm:hidden grid grid-cols-3 gap-1 w-32 text-amber-950">
                     <div></div>
-                    <button id="btn-up" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2 rounded-2xl shadow font-black text-lg flex justify-center items-center">
+                    <button id="btn-up" class="btn-action bg-amber-200/90 py-1 rounded-lg shadow font-black text-sm flex justify-center items-center">
                         <svg class="svg-icon" viewBox="0 0 448 512"><path d="M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z"></path></svg>
                     </button>
                     <div></div>
-                    <button id="btn-left" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2 rounded-2xl shadow font-black text-lg flex justify-center items-center">
+                    <button id="btn-left" class="btn-action bg-amber-200/90 py-1 rounded-lg shadow font-black text-sm flex justify-center items-center">
                         <svg class="svg-icon" viewBox="0 0 320 512"><path d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path></svg>
                     </button>
-                    <button id="btn-down" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2 rounded-2xl shadow font-black text-lg flex justify-center items-center">
+                    <button id="btn-down" class="btn-action bg-amber-200/90 py-1 rounded-lg shadow font-black text-sm flex justify-center items-center">
                         <svg class="svg-icon" viewBox="0 0 448 512"><path d="M207.029 381.476L12.686 187.133c-9.373-9.373-9.373-24.569 0-33.941l22.667-22.667c9.357-9.357 24.522-9.375 33.901-.04L224 284.505l154.745-154.021c9.379-9.335 24.544-9.317 33.901.04l22.667 22.667c9.373 9.373 9.373 24.569 0 33.941L240.971 381.476c-9.373 9.372-24.569 9.372-33.942 0z"></path></svg>
                     </button>
-                    <button id="btn-right" class="btn-action bg-amber-200/90 hover:bg-amber-300 active:bg-amber-400 py-2 rounded-2xl shadow font-black text-lg flex justify-center items-center">
+                    <button id="btn-right" class="btn-action bg-amber-200/90 py-1 rounded-lg shadow font-black text-sm flex justify-center items-center">
                         <svg class="svg-icon" viewBox="0 0 320 512"><path d="M285.47 272.97L91.13 467.31c-9.37 9.37-24.57 9.37-33.94 0l-22.67-22.67c-9.36-9.36-9.37-24.52-.04-33.9L188.51 256 34.49 101.25c-9.34-9.38-9.32-24.54.04-33.9l22.67-22.67c9.37-9.37 24.57-9.37 33.94 0l194.34 194.34c9.37 9.37 9.37 24.57 0 33.94z"></path></svg>
                     </button>
                 </div>
@@ -1021,6 +1019,7 @@
                 this.isHost = false;
                 localStorage.removeItem('2048_active_room');
                 localStorage.removeItem('2048_game_mode');
+                localStorage.removeItem('2048_host_room');
 
                 const roomBadge = document.getElementById('room-badge');
                 if (roomBadge) roomBadge.classList.add('hidden');
@@ -1102,10 +1101,15 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const roomFromUrl = urlParams.get('room') || localStorage.getItem('2048_active_room');
                 const savedMode = localStorage.getItem('2048_game_mode');
+                const savedHostRoom = localStorage.getItem('2048_host_room');
 
                 if (roomFromUrl) {
                     this.showGameView();
-                    this.autoConnectRoom(roomFromUrl.toUpperCase(), true);
+                    if (savedHostRoom === roomFromUrl.toUpperCase()) {
+                        this.createRoom(roomFromUrl.toUpperCase(), true);
+                    } else {
+                        this.autoConnectRoom(roomFromUrl.toUpperCase(), true);
+                    }
                 } else if (savedMode === 'single') {
                     this.showGameView();
                 } else {
@@ -1166,13 +1170,12 @@
                         this.peer.on('error', (err) => {
                             console.warn('AutoConnect Peer Error:', err);
                             if (!connected) {
-                                alert('連線失敗，可能是房間不存在或 Host 已離線。');
-                                this.showPortalView();
+                                console.log('Host 不存在，嘗試建立/重接房間...');
+                                this.createRoom(code, true);
                             }
                         });
                     } catch(e) {
                         console.error('AutoConnect Exception:', e);
-                        alert('連線元件初始化失敗，已返回大廳');
                         this.showPortalView();
                     }
                 }
@@ -1194,6 +1197,7 @@
                 this.roomId = code;
                 this.syncRoomToStorageAndUrl(code);
                 this.isHost = true;
+                localStorage.setItem('2048_host_room', code);
                 this.myPeerId = `2048-room-${code}`;
 
                 if (!silent) {
