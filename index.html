@@ -154,9 +154,11 @@
 
         .btn-action {
             transition: all 0.15s ease;
+            cursor: pointer;
+            touch-action: manipulation;
         }
         .btn-action:active {
-            transform: scale(0.95);
+            transform: scale(0.92);
         }
 
         .backdrop-blur-custom {
@@ -173,7 +175,7 @@
             <div id="room-badge" class="hidden items-center bg-amber-800/80 border border-amber-600 px-3 py-1 rounded-xl text-xs">
                 <span class="text-amber-300 font-bold mr-1.5">房間號:</span>
                 <span id="room-code-display" class="font-extrabold tracking-widest text-white mr-2">-----</span>
-                <button id="copy-room-btn" class="hover:text-amber-300 text-amber-200 font-bold" title="複製邀請連結">
+                <button id="copy-room-btn" class="btn-action hover:text-amber-300 text-amber-200 font-bold" title="複製邀請連結">
                     <i class="fas fa-copy"></i> 複製連結
                 </button>
             </div>
@@ -191,7 +193,7 @@
         
         <!-- ==================== 左欄：即時觀戰 Panel (4 Cols) ==================== -->
         <section class="lg:col-span-4 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[480px]">
-            <div class="flex justify-between items-center pb-2.5 border-b border-amber-100 mb-2">
+            <div class="flex justify-between items-center pb-2.5 border-b border-amber-100 mb-3">
                 <div class="flex items-center gap-2">
                     <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
                         <i class="fas fa-eye"></i>
@@ -203,38 +205,44 @@
                 </span>
             </div>
 
-            <!-- 觀戰目標選擇列表 -->
-            <div class="mb-2">
-                <div class="text-xs font-bold text-amber-700/80 mb-1">點擊玩家進行實時畫面觀戰：</div>
-                <div id="spectate-players-list" class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-                    <div class="text-xs text-amber-800/50 italic py-2">尚無其他玩家加入，點擊右上角「複製連結」傳給好友即可連線！</div>
+            <!-- 全新左右箭頭觀戰切換組件 (左右箭頭 + 中間暱稱) -->
+            <div class="mb-3">
+                <div class="text-xs font-bold text-amber-700/80 mb-1.5 text-center">切換觀看玩家：</div>
+                <div class="flex items-center justify-between gap-2 bg-amber-100/60 border border-amber-300 rounded-2xl p-1.5 shadow-sm">
+                    <!-- 左箭頭按鈕 -->
+                    <button id="spectate-prev-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    <!-- 中間玩家暱稱與分數 -->
+                    <div class="flex-1 bg-white border border-amber-200 rounded-xl py-1 px-2 text-center shadow-inner overflow-hidden">
+                        <div id="spectate-target-name" class="font-extrabold text-sm text-amber-950 truncate">未選取觀戰目標</div>
+                        <div class="text-[10px] font-bold text-amber-700 flex justify-center gap-2 mt-0.5">
+                            <span>得分: <span id="spectate-score-val" class="text-amber-950 font-extrabold">0</span></span>
+                            <span>| 最高: <span id="spectate-max-tile-val" class="text-amber-950 font-extrabold">0</span></span>
+                        </div>
+                    </div>
+
+                    <!-- 右箭頭按鈕 -->
+                    <button id="spectate-next-btn" class="btn-action w-11 h-11 rounded-xl bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-bold text-base flex items-center justify-center shadow">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
 
             <!-- 即時觀戰主棋盤畫面 -->
             <div class="flex-1 flex flex-col items-center justify-center bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 relative min-h-[260px]">
-                <div id="spectate-target-info" class="w-full flex justify-between items-center mb-2 px-1">
-                    <div class="flex items-center gap-1.5">
-                        <i class="fas fa-user-circle text-amber-700 text-lg"></i>
-                        <span id="spectate-target-name" class="font-bold text-xs text-amber-900">未選取觀戰目標</span>
-                    </div>
-                    <div id="spectate-target-status" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-200/80 text-amber-800">
-                        等待連線中
-                    </div>
+                <div id="spectate-target-status" class="mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                    等待連線中
                 </div>
 
                 <!-- 觀戰 Mini 網格容器 -->
                 <div class="w-full max-w-[240px] aspect-square bg-board rounded-xl p-2 shadow-inner flex items-center justify-center relative" id="spectate-grid-container">
                     <div id="spectate-mini-grid" class="w-full h-full grid gap-1.5">
                         <div class="text-center text-amber-100 text-xs flex items-center justify-center h-full font-medium">
-                            點擊上方玩家卡片開始觀戰
+                            點擊左右箭頭切換觀戰玩家
                         </div>
                     </div>
-                </div>
-                
-                <div class="mt-2.5 flex justify-between w-full max-w-[240px] text-xs font-bold text-amber-800/80">
-                    <div>觀戰得分: <span id="spectate-score-val" class="text-amber-900 font-extrabold">0</span></div>
-                    <div>最高方塊: <span id="spectate-max-tile-val" class="text-amber-900 font-extrabold">0</span></div>
                 </div>
             </div>
         </section>
@@ -260,14 +268,14 @@
                 </div>
                 
                 <div class="flex justify-around items-center bg-white/80 rounded-xl py-1 px-2 border border-amber-200">
-                    <button onclick="gameInstance.sendEmoji('😂')" class="btn-action hover:scale-125 text-xl" title="笑死">😂</button>
-                    <button onclick="gameInstance.sendEmoji('🔥')" class="btn-action hover:scale-125 text-xl" title="火熱">🔥</button>
-                    <button onclick="gameInstance.sendEmoji('💩')" class="btn-action hover:scale-125 text-xl" title="便便">💩</button>
-                    <button onclick="gameInstance.sendEmoji('👑')" class="btn-action hover:scale-125 text-xl" title="皇冠">👑</button>
-                    <button onclick="gameInstance.sendEmoji('👍')" class="btn-action hover:scale-125 text-xl" title="讚">👍</button>
-                    <button onclick="gameInstance.sendEmoji('😱')" class="btn-action hover:scale-125 text-xl" title="驚嚇">😱</button>
-                    <button onclick="gameInstance.sendEmoji('💣')" class="btn-action hover:scale-125 text-xl" title="炸彈">💣</button>
-                    <button onclick="gameInstance.sendEmoji('🏆')" class="btn-action hover:scale-125 text-xl" title="獎盃">🏆</button>
+                    <button onclick="gameInstance.sendEmoji('😂')" class="btn-action text-xl p-1" title="笑死">😂</button>
+                    <button onclick="gameInstance.sendEmoji('🔥')" class="btn-action text-xl p-1" title="火熱">🔥</button>
+                    <button onclick="gameInstance.sendEmoji('💩')" class="btn-action text-xl p-1" title="便便">💩</button>
+                    <button onclick="gameInstance.sendEmoji('👑')" class="btn-action text-xl p-1" title="皇冠">👑</button>
+                    <button onclick="gameInstance.sendEmoji('👍')" class="btn-action text-xl p-1" title="讚">👍</button>
+                    <button onclick="gameInstance.sendEmoji('😱')" class="btn-action text-xl p-1" title="驚嚇">😱</button>
+                    <button onclick="gameInstance.sendEmoji('💣')" class="btn-action text-xl p-1" title="炸彈">💣</button>
+                    <button onclick="gameInstance.sendEmoji('🏆')" class="btn-action text-xl p-1" title="獎盃">🏆</button>
                 </div>
             </div>
 
@@ -375,7 +383,7 @@
     <!-- ==================== Modal 1: 創建/加入房間彈窗 ==================== -->
     <div id="room-modal" class="fixed inset-0 bg-amber-950/70 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-amber-300 relative">
-            <button id="close-room-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-amber-900 text-xl font-bold">
+            <button id="close-room-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-amber-900 text-xl font-bold p-2">
                 <i class="fas fa-times"></i>
             </button>
             
@@ -597,7 +605,6 @@
 
                         this.handlePeerConnection(conn);
 
-                        // If Host fails to connect in 1.2s, become Host
                         setTimeout(() => {
                             if (!connected && Object.keys(this.connections).length === 0) {
                                 try { this.peer.destroy(); } catch(e){}
@@ -754,6 +761,26 @@
 
                 const playersList = Object.values(this.roomPlayers).sort((a, b) => b.score - a.score);
                 this.renderLeaderboard(playersList);
+                this.renderSpectateList();
+            }
+
+            spectatePrevPlayer() {
+                const players = Object.values(this.roomPlayers).filter(p => p.id !== this.myPeerId);
+                if (players.length === 0) return;
+                let idx = players.findIndex(p => p.id === this.spectateTargetId);
+                if (idx <= 0) idx = players.length - 1;
+                else idx--;
+                this.spectateTargetId = players[idx].id;
+                this.renderSpectateList();
+            }
+
+            spectateNextPlayer() {
+                const players = Object.values(this.roomPlayers).filter(p => p.id !== this.myPeerId);
+                if (players.length === 0) return;
+                let idx = players.findIndex(p => p.id === this.spectateTargetId);
+                if (idx === -1 || idx >= players.length - 1) idx = 0;
+                else idx++;
+                this.spectateTargetId = players[idx].id;
                 this.renderSpectateList();
             }
 
@@ -1229,41 +1256,21 @@
             }
 
             renderSpectateList() {
-                const container = document.getElementById('spectate-players-list');
                 const players = Object.values(this.roomPlayers).filter(p => p.id !== this.myPeerId);
                 document.getElementById('spectate-count-badge').textContent = `在線玩家: ${Object.keys(this.roomPlayers).length}`;
-
-                if (players.length === 0) {
-                    container.innerHTML = `<div class="text-xs text-amber-800/50 italic py-2">尚無其他玩家，快點擊右上角「複製連結」邀請好友！</div>`;
-                    this.spectateTargetId = null;
-                    this.renderSpectateBoard(null);
-                    return;
-                }
 
                 if (!this.spectateTargetId && players.length > 0) {
                     this.spectateTargetId = players[0].id;
                 }
 
-                container.innerHTML = players.map(p => {
-                    const isSelected = p.id === this.spectateTargetId;
-                    return `
-                        <button onclick="gameInstance.selectSpectateTarget('${p.id}')" 
-                                class="btn-action flex-shrink-0 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 ${isSelected ? 'bg-indigo-600 text-white border-indigo-700 shadow-md scale-105' : 'bg-amber-100/70 hover:bg-amber-200 text-amber-950 border-amber-300'}">
-                            <i class="fas ${isSelected ? 'fa-eye' : 'fa-user'} text-xs"></i>
-                            <span>${p.name}</span>
-                            <span class="text-[10px] opacity-80 font-normal">(${p.score}分)</span>
-                        </button>
-                    `;
-                }).join('');
-
-                if (this.spectateTargetId && this.roomPlayers[this.spectateTargetId]) {
-                    this.renderSpectateBoard(this.roomPlayers[this.spectateTargetId]);
+                const currentPlayer = players.find(p => p.id === this.spectateTargetId) || (players.length > 0 ? players[0] : null);
+                if (currentPlayer) {
+                    this.spectateTargetId = currentPlayer.id;
+                } else {
+                    this.spectateTargetId = null;
                 }
-            }
 
-            selectSpectateTarget(playerId) {
-                this.spectateTargetId = playerId;
-                this.renderSpectateList();
+                this.renderSpectateBoard(currentPlayer);
             }
 
             renderSpectateBoard(player) {
@@ -1274,10 +1281,10 @@
                 const maxTileVal = document.getElementById('spectate-max-tile-val');
 
                 if (!player || !player.grid) {
-                    targetName.textContent = player ? player.name : '未選取觀戰目標';
-                    targetStatus.textContent = '尚未產生盤面';
+                    targetName.textContent = player ? player.name : '尚無其他人';
+                    targetStatus.textContent = '等待玩家加入';
                     miniGrid.style.gridTemplateColumns = `repeat(4, minmax(0, 1fr))`;
-                    miniGrid.innerHTML = `<div class="col-span-4 text-center text-amber-800/50 text-xs py-10 font-bold">等待此玩家進行操作...</div>`;
+                    miniGrid.innerHTML = `<div class="col-span-4 text-center text-amber-800/50 text-xs py-10 font-bold">點擊右上角複製連結邀請好友加入觀戰！</div>`;
                     scoreVal.textContent = player ? player.score : 0;
                     maxTileVal.textContent = player ? player.maxTile : 0;
                     return;
@@ -1289,13 +1296,13 @@
 
                 if (player.status === 'gameover') {
                     targetStatus.textContent = '已淘汰 (Game Over)';
-                    targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700';
+                    targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-rose-100 text-rose-700';
                 } else if (player.status === 'won') {
                     targetStatus.textContent = '達成 2048!';
-                    targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700';
+                    targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
                 } else {
                     targetStatus.textContent = '0ms 即時連線';
-                    targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800';
+                    targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
                 }
 
                 const size = player.grid.length;
@@ -1378,6 +1385,10 @@
                     }
                     touchStartX = 0; touchStartY = 0;
                 }, { passive: true });
+
+                // 觀戰左右切換按鈕事件綁定
+                document.getElementById('spectate-prev-btn').addEventListener('click', () => this.spectatePrevPlayer());
+                document.getElementById('spectate-next-btn').addEventListener('click', () => this.spectateNextPlayer());
 
                 document.getElementById('restart-btn').addEventListener('click', () => this.restart());
                 document.getElementById('overlay-restart-btn').addEventListener('click', () => this.restart());
