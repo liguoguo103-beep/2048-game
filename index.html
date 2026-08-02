@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>2048 線上多人對戰 (GitHub 0延遲 P2P 雲端版)</title>
+    <title>2048 多人線上對戰</title>
     <!-- 網頁標籤頁圖示 (Favicon) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23edc22e'/><text x='50' y='64' font-size='36' font-weight='900' font-family='sans-serif' fill='%23ffffff' text-anchor='middle'>2048</text></svg>">
     <!-- Tailwind CSS -->
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
-    <!-- PeerJS for Free WebRTC P2P Multiplayer -->
+    <!-- PeerJS for WebRTC P2P Multiplayer -->
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     
     <script>
@@ -171,7 +171,7 @@
     <!-- 頂部導覽與房間狀態列 -->
     <header class="w-full bg-amber-900 text-white rounded-2xl px-4 py-3 shadow-md mb-3 flex flex-wrap justify-between items-center gap-3">
         <div class="flex items-center gap-3">
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-300">2048 <span class="text-xs bg-emerald-600 text-emerald-100 px-2 py-0.5 rounded-full font-medium ml-1">⚡ 0 延遲 P2P 直連版</span></h1>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-300">2048 <span class="text-xs bg-emerald-700 text-emerald-100 px-2 py-0.5 rounded-full font-medium ml-1">多人線上對戰</span></h1>
             <div id="room-badge" class="hidden items-center bg-amber-800/80 border border-amber-600 px-3 py-1 rounded-xl text-xs">
                 <span class="text-amber-300 font-bold mr-1.5">房間號:</span>
                 <span id="room-code-display" class="font-extrabold tracking-widest text-white mr-2">-----</span>
@@ -198,14 +198,14 @@
                     <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
                         <i class="fas fa-eye"></i>
                     </div>
-                    <h2 class="font-extrabold text-amber-900 text-base">即時觀戰 (0ms 同步)</h2>
+                    <h2 class="font-extrabold text-amber-900 text-base">即時觀戰</h2>
                 </div>
                 <span id="spectate-count-badge" class="text-[11px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
                     在線玩家: 1
                 </span>
             </div>
 
-            <!-- 全新左右箭頭觀戰切換組件 (左右箭頭 + 中間暱稱) -->
+            <!-- 左右箭頭觀戰切換組件 -->
             <div class="mb-3">
                 <div class="text-xs font-bold text-amber-700/80 mb-1.5 text-center">切換觀看玩家：</div>
                 <div class="flex items-center justify-between gap-2 bg-amber-100/60 border border-amber-300 rounded-2xl p-1.5 shadow-sm">
@@ -254,7 +254,7 @@
             <div class="w-full max-w-md bg-amber-100/90 border border-amber-300 rounded-2xl p-2 mb-2 shadow-sm flex flex-col gap-1.5">
                 <div class="flex justify-between items-center px-1">
                     <span class="text-[11px] font-extrabold text-amber-900 flex items-center gap-1">
-                        <i class="fas fa-smile-wink text-amber-600"></i> 即時互動 & 嗆聲特快車:
+                        <i class="fas fa-smile-wink text-amber-600"></i> 即時互動與嗆聲:
                     </span>
                     <select id="quick-taunt-select" class="bg-white border border-amber-300 text-amber-900 font-bold text-[11px] rounded-lg px-2 py-0.5 focus:outline-none cursor-pointer">
                         <option value="" disabled selected>💬 選擇嗆聲短語...</option>
@@ -391,13 +391,18 @@
                 <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-2 font-bold">
                     <i class="fas fa-gamepad"></i>
                 </div>
-                <h3 class="text-2xl font-extrabold text-amber-950">GitHub P2P 連線大廳</h3>
-                <p class="text-xs text-amber-700 mt-1">無需伺服器！0延遲 WebRTC 點對點連線對戰！</p>
+                <h3 class="text-2xl font-extrabold text-amber-950">線上連線大廳</h3>
+                <p class="text-xs text-amber-700 mt-1">多人即時連線對戰</p>
             </div>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-amber-900 mb-1">玩家暱稱：</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-bold text-amber-900">玩家暱稱：</label>
+                        <button id="random-name-btn" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                            <i class="fas fa-dice"></i> 隨機暱稱
+                        </button>
+                    </div>
                     <input type="text" id="nickname-input" class="w-full bg-amber-50/80 border-2 border-amber-200 rounded-xl px-3.5 py-2.5 text-amber-950 font-bold text-sm focus:outline-none focus:border-amber-500" placeholder="請輸入你的暱稱..." maxlength="12">
                 </div>
 
@@ -546,10 +551,12 @@
                 this.roomId = null;
                 this.isHost = false;
                 this.connections = {}; // { peerId: DataConnection }
-                this.playerName = localStorage.getItem('2048_player_name') || `玩家_${Math.floor(Math.random()*900+100)}`;
                 this.spectateTargetId = null;
                 this.roomPlayers = {}; // { peerId: playerState }
                 this.heartbeatTimer = null;
+
+                // 隨機強大自動命名系統
+                this.playerName = localStorage.getItem('2048_player_name') || this.generateSmartName();
 
                 this.gridBg = document.getElementById('grid-background');
                 this.tileContainer = document.getElementById('tile-container');
@@ -563,6 +570,28 @@
                 this.initUI();
                 this.initP2P();
                 this.restart();
+            }
+
+            generateSmartName() {
+                const prefixes = ['神探', '極速', '熱血', '星空', '極限', '無敵', '天才', '狂暴', '王牌', '飛速', '幻影', '超能', '閃電', '破風'];
+                const suffixes = ['小吉', '勇者', '棋手', '挑戰者', '大師', '戰神', '玩家', '高手', '小霸王', '先鋒', '遊俠', '騎士'];
+                const p = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const s = suffixes[Math.floor(Math.random() * suffixes.length)];
+                return `${p}${s}`;
+            }
+
+            getUniquePlayerName(baseName) {
+                let name = (baseName || '').trim() || this.generateSmartName();
+                const existingNames = Object.values(this.roomPlayers)
+                    .filter(p => p.id !== this.myPeerId)
+                    .map(p => p.name);
+                
+                if (!existingNames.includes(name)) return name;
+                let count = 2;
+                while (existingNames.includes(`${name} (${count})`)) {
+                    count++;
+                }
+                return `${name} (${count})`;
             }
 
             initUI() {
@@ -584,7 +613,11 @@
             }
 
             autoConnectRoom(code) {
-                this.playerName = document.getElementById('nickname-input').value.trim() || '玩家';
+                const rawName = document.getElementById('nickname-input').value.trim() || this.playerName;
+                this.playerName = this.getUniquePlayerName(rawName);
+                localStorage.setItem('2048_player_name', this.playerName);
+                document.getElementById('player-self-name').textContent = this.playerName;
+
                 this.roomId = code;
                 this.myPeerId = `2048-peer-${Math.random().toString(36).substring(2, 8)}`;
 
@@ -620,7 +653,8 @@
             }
 
             createRoom(customCode, silent = false) {
-                this.playerName = document.getElementById('nickname-input').value.trim() || '玩家';
+                const rawName = document.getElementById('nickname-input').value.trim() || this.playerName;
+                this.playerName = this.getUniquePlayerName(rawName);
                 localStorage.setItem('2048_player_name', this.playerName);
                 document.getElementById('player-self-name').textContent = this.playerName;
 
@@ -678,9 +712,14 @@
 
             onP2PDataReceived(conn, data) {
                 if (data.type === 'JOIN') {
-                    this.roomPlayers[conn.peer] = data.playerData || {
-                        id: conn.peer, name: data.name, score: 0, maxTile: 2, status: 'playing', isHost: false, grid: null
+                    // 防止房間內同名重疊
+                    const uniqueName = this.getUniquePlayerName(data.name);
+                    const pData = data.playerData || {
+                        id: conn.peer, name: uniqueName, score: 0, maxTile: 2, status: 'playing', isHost: false, grid: null
                     };
+                    pData.name = uniqueName;
+
+                    this.roomPlayers[conn.peer] = pData;
                     this.connections[conn.peer] = conn;
                     this.broadcastP2PState();
                 } else if (data.type === 'STATE_UPDATE') {
@@ -1295,13 +1334,13 @@
                 maxTileVal.textContent = player.maxTile || 2;
 
                 if (player.status === 'gameover') {
-                    targetStatus.textContent = '已淘汰 (Game Over)';
+                    targetStatus.textContent = '已淘汰';
                     targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-rose-100 text-rose-700';
                 } else if (player.status === 'won') {
                     targetStatus.textContent = '達成 2048!';
                     targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
                 } else {
-                    targetStatus.textContent = '0ms 即時連線';
+                    targetStatus.textContent = '對戰中';
                     targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
                 }
 
@@ -1349,7 +1388,7 @@
                             </div>
                             <div class="text-right">
                                 <div class="text-amber-900 font-extrabold text-sm">${item.score}</div>
-                                <div class="text-[9px] ${item.status === 'gameover' ? 'text-rose-600' : 'text-emerald-600'}">${item.status === 'gameover' ? '淘汰' : '0ms 直連'}</div>
+                                <div class="text-[9px] ${item.status === 'gameover' ? 'text-rose-600' : 'text-emerald-600'}">${item.status === 'gameover' ? '淘汰' : '對戰中'}</div>
                             </div>
                         </div>
                     `;
@@ -1386,7 +1425,6 @@
                     touchStartX = 0; touchStartY = 0;
                 }, { passive: true });
 
-                // 觀戰左右切換按鈕事件綁定
                 document.getElementById('spectate-prev-btn').addEventListener('click', () => this.spectatePrevPlayer());
                 document.getElementById('spectate-next-btn').addEventListener('click', () => this.spectateNextPlayer());
 
@@ -1404,6 +1442,11 @@
                 document.getElementById('btn-right').addEventListener('click', () => this.move(1));
                 document.getElementById('btn-down').addEventListener('click', () => this.move(2));
                 document.getElementById('btn-left').addEventListener('click', () => this.move(3));
+
+                document.getElementById('random-name-btn').addEventListener('click', () => {
+                    const newName = this.generateSmartName();
+                    document.getElementById('nickname-input').value = newName;
+                });
 
                 document.getElementById('quick-taunt-select').addEventListener('change', (e) => {
                     const text = e.target.value;
