@@ -761,7 +761,7 @@
 
         class Game2048 {
             constructor() {
-                this.size = 4;
+                this.size = parseInt(localStorage.getItem('2048_saved_size') || '4', 10);
                 this.grid = [];
                 this.tiles = [];
                 this.score = 0;
@@ -803,6 +803,56 @@
                 this.initUI();
                 this.initP2P();
                 this.restart();
+            }
+
+            saveCurrentGame() {
+                // 儲存當前局棋盤、分數、尺寸至 localStorage
+                const gridValues = Array(this.size).fill(null).map(() => Array(this.size).fill(0));
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.grid[r][c]) gridValues[r][c] = this.grid[r][c].value;
+                    }
+                }
+                localStorage.setItem('2048_saved_grid', JSON.stringify(gridValues));
+                localStorage.setItem('2048_saved_score', this.score.toString());
+                localStorage.setItem('2048_saved_size', this.size.toString());
+                localStorage.setItem('2048_saved_won', this.won ? '1' : '0');
+            }
+
+            loadSavedGame() {
+                // 從 localStorage 還原棋盤（僅單人模式）
+                try {
+                    const savedGrid = JSON.parse(localStorage.getItem('2048_saved_grid') || 'null');
+                    const savedScore = parseInt(localStorage.getItem('2048_saved_score') || '0', 10);
+                    const savedWon = localStorage.getItem('2048_saved_won') === '1';
+                    if (!savedGrid || savedGrid.length !== this.size) return false;
+
+                    this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
+                    this.tiles = [];
+                    if (this.tileContainer) this.tileContainer.innerHTML = '';
+                    let hasAnyTile = false;
+                    for (let r = 0; r < this.size; r++) {
+                        for (let c = 0; c < this.size; c++) {
+                            const val = savedGrid[r][c];
+                            if (val > 0) {
+                                const tile = new Tile(r, c, val);
+                                tile.isNew = false;
+                                this.grid[r][c] = tile;
+                                this.tiles.push(tile);
+                                hasAnyTile = true;
+                            }
+                        }
+                    }
+                    if (!hasAnyTile) return false;
+                    this.score = savedScore;
+                    this.won = savedWon;
+                    this.keepPlaying = savedWon;
+                    this.updateScore(0, true);
+                    this.actuate();
+                    return true;
+                } catch(e) {
+                    return false;
+                }
             }
 
             initAuth() {
@@ -1364,7 +1414,7 @@
                 }
             }
 
-            restart() {
+            restart(forceNew = false) {
                 const select = document.getElementById('grid-size-select');
                 if (select) this.size = parseInt(select.value, 10);
                 this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
@@ -1381,9 +1431,25 @@
                 this.hideOverlay();
                 this.updateScore(0, true);
                 this.updateUndoButton();
+
+                // 若非強制重開，嘗試還原上次儲存的局（含多人模式）
+                if (!forceNew) {
+                    const restored = this.loadSavedGame();
+                    if (restored) {
+                        this.updateUndoButton();
+                        if (this.peer) this.broadcastP2PState();
+                        return;
+                    }
+                }
+
+                // 清除舊存檔，開新局
+                localStorage.removeItem('2048_saved_grid');
+                localStorage.removeItem('2048_saved_score');
+                localStorage.removeItem('2048_saved_won');
                 this.addRandomTile();
                 this.addRandomTile();
                 this.actuate();
+                this.saveCurrentGame();
                 
                 if (this.peer) this.broadcastP2PState();
             }
@@ -1519,6 +1585,7 @@
                     this.updateScore(mergedTotalScore);
                     this.addRandomTile();
                     this.actuate();
+                    this.saveCurrentGame(); // 每次移動自動儲存
                     
                     if (this.peer) this.broadcastP2PState();
 
@@ -1864,10 +1931,10 @@
                 if (nextBtn) nextBtn.addEventListener('click', () => this.spectateNextPlayer());
 
                 const restartBtn = document.getElementById('restart-btn');
-                if (restartBtn) restartBtn.addEventListener('click', () => this.restart());
+                if (restartBtn) restartBtn.addEventListener('click', () => this.restart(true)); // 手動重來強制新局
 
                 const overlayRestartBtn = document.getElementById('overlay-restart-btn');
-                if (overlayRestartBtn) overlayRestartBtn.addEventListener('click', () => this.restart());
+                if (overlayRestartBtn) overlayRestartBtn.addEventListener('click', () => this.restart(true)); // 遊戲結束後重開
 
                 if (this.undoBtn) this.undoBtn.addEventListener('click', () => this.undo());
 
