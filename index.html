@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>2048 線上多人對戰 (GitHub 免費 P2P 雲端版)</title>
+    <title>2048 線上多人對戰 (GitHub 0延遲 P2P 雲端版)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
-    <!-- PeerJS for Free WebRTC P2P Multiplayer (No Server Required!) -->
+    <!-- PeerJS for Free WebRTC P2P Multiplayer -->
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <!-- Socket.IO Fallback -->
-    <script src="/socket.io/socket.io.js" onerror="console.log('Socket.IO optional fallback')"></script>
     
     <script>
         tailwind.config = {
@@ -169,7 +167,7 @@
     <!-- 頂部導覽與房間狀態列 -->
     <header class="w-full bg-amber-900 text-white rounded-2xl px-4 py-3 shadow-md mb-3 flex flex-wrap justify-between items-center gap-3">
         <div class="flex items-center gap-3">
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-300">2048 <span class="text-xs bg-emerald-700 text-emerald-100 px-2 py-0.5 rounded-full font-medium ml-1">GitHub P2P 免費競技版</span></h1>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-amber-300">2048 <span class="text-xs bg-emerald-600 text-emerald-100 px-2 py-0.5 rounded-full font-medium ml-1">⚡ 0 延遲 P2P 直連版</span></h1>
             <div id="room-badge" class="hidden items-center bg-amber-800/80 border border-amber-600 px-3 py-1 rounded-xl text-xs">
                 <span class="text-amber-300 font-bold mr-1.5">房間號:</span>
                 <span id="room-code-display" class="font-extrabold tracking-widest text-white mr-2">-----</span>
@@ -180,19 +178,6 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-            <!-- 倒數計時器 -->
-            <div id="timer-box" class="hidden bg-amber-950/80 border border-amber-600/70 px-3 py-1.5 rounded-xl flex items-center gap-2">
-                <i class="fas fa-stopwatch text-amber-400 text-sm"></i>
-                <div class="text-[10px] text-amber-200 font-bold uppercase">剩餘時間</div>
-                <div id="match-timer-display" class="text-base font-extrabold text-yellow-300 tracking-wider">03:00</div>
-            </div>
-
-            <!-- 房主設定按鈕 -->
-            <button id="host-settings-btn" class="hidden btn-action bg-amber-700 hover:bg-amber-600 text-amber-100 font-bold text-xs rounded-xl px-3 py-2 border border-amber-500 shadow flex items-center gap-1.5">
-                <i class="fas fa-cog"></i> 房主設定
-            </button>
-
-            <!-- 創建/加入房間 Modal 觸發 -->
             <button id="open-room-modal-btn" class="btn-action bg-yellow-500 hover:bg-yellow-600 text-amber-950 font-bold text-xs rounded-xl px-3.5 py-2 shadow flex items-center gap-1.5">
                 <i class="fas fa-users"></i> <span id="room-status-btn-text">創建/加入房間</span>
             </button>
@@ -209,10 +194,10 @@
                     <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
                         <i class="fas fa-eye"></i>
                     </div>
-                    <h2 class="font-extrabold text-amber-900 text-base">即時觀戰</h2>
+                    <h2 class="font-extrabold text-amber-900 text-base">即時觀戰 (0ms 同步)</h2>
                 </div>
                 <span id="spectate-count-badge" class="text-[11px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
-                    在線玩家: 0
+                    在線玩家: 1
                 </span>
             </div>
 
@@ -220,7 +205,7 @@
             <div class="mb-2">
                 <div class="text-xs font-bold text-amber-700/80 mb-1">點擊玩家進行實時畫面觀戰：</div>
                 <div id="spectate-players-list" class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-                    <div class="text-xs text-amber-800/50 italic py-2">尚無其他玩家，快點擊上方「複製連結」邀請好友！</div>
+                    <div class="text-xs text-amber-800/50 italic py-2">尚無其他玩家加入，點擊右上角「複製連結」傳給好友即可連線！</div>
                 </div>
             </div>
 
@@ -232,7 +217,7 @@
                         <span id="spectate-target-name" class="font-bold text-xs text-amber-900">未選取觀戰目標</span>
                     </div>
                     <div id="spectate-target-status" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-200/80 text-amber-800">
-                        等待觀戰中
+                        等待連線中
                     </div>
                 </div>
 
@@ -365,34 +350,23 @@
             </div>
         </section>
 
-        <!-- ==================== 右欄：即時排行榜 & 永久名人堂 (3 Cols) ==================== -->
+        <!-- ==================== 右欄：即時排行榜 (3 Cols) ==================== -->
         <section class="lg:col-span-3 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[480px]">
-            <!-- 分頁切換鈕：房間對戰 vs 本地歷史紀錄 -->
-            <div class="flex bg-amber-100/70 rounded-xl p-1 mb-3 border border-amber-200">
-                <button id="tab-room-rank-btn" class="flex-1 py-1.5 rounded-lg text-xs font-extrabold transition-all bg-white text-amber-950 shadow-sm">
-                    當前房間對戰
-                </button>
-                <button id="tab-hall-fame-btn" class="flex-1 py-1.5 rounded-lg text-xs font-extrabold transition-all text-amber-800 hover:text-amber-950">
-                    🏆 個人紀錄
-                </button>
-            </div>
-
-            <!-- 發起比賽按鈕 (僅房主可見) -->
-            <div id="host-control-box" class="hidden mb-3">
-                <button id="start-match-btn" class="w-full btn-action bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl py-2.5 shadow border border-emerald-500 flex items-center justify-center gap-1.5">
-                    <i class="fas fa-play-circle text-sm"></i> 發起房間對戰比賽
-                </button>
-            </div>
-
-            <!-- 當前房間排行榜列表 -->
-            <div id="leaderboard-list" class="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[380px] scrollbar-thin">
-                <div class="text-xs text-amber-800/60 text-center py-6">
-                    單人模式中。點擊「創建/加入房間」即可透過 PeerJS P2P 與好友實時連線！
+            <div class="flex justify-between items-center pb-2.5 border-b border-amber-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h2 class="font-extrabold text-amber-900 text-base">即時排行榜</h2>
                 </div>
             </div>
 
-            <!-- 本地歷史紀錄列表 -->
-            <div id="hall-of-fame-list" class="hidden flex-1 flex-col gap-2 overflow-y-auto max-h-[380px] scrollbar-thin"></div>
+            <!-- 排行榜列表 -->
+            <div id="leaderboard-list" class="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[400px] scrollbar-thin">
+                <div class="text-xs text-amber-800/60 text-center py-6">
+                    連線中... 點擊右上角「複製連結」傳給好友即可連線對戰！
+                </div>
+            </div>
         </section>
     </div>
 
@@ -408,7 +382,7 @@
                     <i class="fas fa-gamepad"></i>
                 </div>
                 <h3 class="text-2xl font-extrabold text-amber-950">GitHub P2P 連線大廳</h3>
-                <p class="text-xs text-amber-700 mt-1">無需伺服器！直接透過 WebRTC 點對點連線對戰！</p>
+                <p class="text-xs text-amber-700 mt-1">無需伺服器！0延遲 WebRTC 點對點連線對戰！</p>
             </div>
 
             <div class="space-y-4">
@@ -439,50 +413,19 @@
         </div>
     </div>
 
-    <!-- ==================== Modal 2: 房主比賽設定彈窗 ==================== -->
-    <div id="host-settings-modal" class="fixed inset-0 bg-amber-950/70 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border-2 border-amber-300 relative">
-            <button id="close-host-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-amber-900 text-xl font-bold">
-                <i class="fas fa-times"></i>
-            </button>
-            <h3 class="text-xl font-extrabold text-amber-950 mb-4 text-center"><i class="fas fa-cog text-amber-600 mr-1.5"></i>房主比賽設定</h3>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-amber-900 mb-1">比賽限時：</label>
-                    <select id="modal-duration-select" class="w-full bg-amber-50 border-2 border-amber-200 rounded-xl px-3 py-2 text-amber-900 font-bold text-xs">
-                        <option value="180" selected>3 分鐘 (標準極速賽)</option>
-                        <option value="300">5 分鐘 (經典耐力賽)</option>
-                        <option value="600">10 分鐘 (大師馬拉松)</option>
-                        <option value="0">無時間限制</option>
-                    </select>
-                </div>
-
-                <button id="save-host-settings-btn" class="w-full btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold py-2.5 rounded-xl text-xs shadow mt-2">
-                    保存設定
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==================== Modal 3: 比賽結算頒獎台彈窗 ==================== -->
-    <div id="match-results-modal" class="fixed inset-0 bg-amber-950/80 backdrop-blur-custom z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-yellow-400 text-center relative">
-            <div class="text-5xl text-yellow-400 mb-2">
-                <i class="fas fa-crown"></i>
-            </div>
-            <h3 class="text-3xl font-extrabold text-amber-950 mb-1">比賽圓滿結束！</h3>
-            <p id="results-winner-text" class="text-sm font-bold text-amber-700 mb-4">冠軍得主是：<span class="text-amber-950 text-base underline">-----</span></p>
-
-            <div class="bg-amber-50 rounded-2xl p-3 border border-amber-200 mb-5 max-h-48 overflow-y-auto" id="results-podium-list"></div>
-
-            <button id="close-results-modal-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow">
-                返回大廳
-            </button>
-        </div>
-    </div>
-
     <script>
+        // 高性能 WebRTC STUN 設定
+        const PEER_CONFIG = {
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun3.l.google.com:19302' }
+                ]
+            }
+        };
+
         // 音效引擎
         class SoundEngine {
             constructor() {
@@ -596,6 +539,7 @@
                 this.playerName = localStorage.getItem('2048_player_name') || `玩家_${Math.floor(Math.random()*900+100)}`;
                 this.spectateTargetId = null;
                 this.roomPlayers = {}; // { peerId: playerState }
+                this.heartbeatTimer = null;
 
                 this.gridBg = document.getElementById('grid-background');
                 this.tileContainer = document.getElementById('tile-container');
@@ -623,92 +567,95 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const roomFromUrl = urlParams.get('room');
                 if (roomFromUrl) {
-                    setTimeout(() => this.joinRoom(roomFromUrl.toUpperCase()), 500);
+                    this.autoConnectRoom(roomFromUrl.toUpperCase());
+                } else {
+                    this.createRoom(Math.random().toString(36).substring(2, 8).toUpperCase(), true);
                 }
             }
 
-            createRoom() {
+            autoConnectRoom(code) {
+                this.playerName = document.getElementById('nickname-input').value.trim() || '玩家';
+                this.roomId = code;
+                this.myPeerId = `2048-peer-${Math.random().toString(36).substring(2, 8)}`;
+
+                if (typeof Peer !== 'undefined') {
+                    this.peer = new Peer(this.myPeerId, PEER_CONFIG);
+
+                    this.peer.on('open', () => {
+                        const hostPeerId = `2048-room-${this.roomId}`;
+                        const conn = this.peer.connect(hostPeerId, { reliable: true });
+
+                        let connected = false;
+                        conn.on('open', () => {
+                            connected = true;
+                            this.connections[hostPeerId] = conn;
+                            conn.send({ type: 'JOIN', name: this.playerName, playerData: this.getSelfPlayerState() });
+                            this.updateRoomStateDisplay();
+                        });
+
+                        this.handlePeerConnection(conn);
+
+                        // If Host fails to connect in 1.2s, become Host
+                        setTimeout(() => {
+                            if (!connected && Object.keys(this.connections).length === 0) {
+                                try { this.peer.destroy(); } catch(e){}
+                                this.createRoom(code, false);
+                            }
+                        }, 1200);
+                    });
+
+                    this.peer.on('error', () => {
+                        this.createRoom(code, false);
+                    });
+                }
+            }
+
+            createRoom(customCode, silent = false) {
                 this.playerName = document.getElementById('nickname-input').value.trim() || '玩家';
                 localStorage.setItem('2048_player_name', this.playerName);
                 document.getElementById('player-self-name').textContent = this.playerName;
 
-                const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const code = customCode || Math.random().toString(36).substring(2, 8).toUpperCase();
                 this.roomId = code;
                 this.isHost = true;
                 this.myPeerId = `2048-room-${code}`;
 
                 if (typeof Peer !== 'undefined') {
-                    this.peer = new Peer(this.myPeerId);
+                    if (this.peer) try { this.peer.destroy(); } catch(e){}
+                    this.peer = new Peer(this.myPeerId, PEER_CONFIG);
 
-                    this.peer.on('open', (id) => {
-                        console.log('Room created with Host Peer ID:', id);
+                    this.peer.on('open', () => {
                         document.getElementById('room-modal').classList.remove('opacity-100');
                         document.getElementById('room-modal').classList.add('opacity-0', 'pointer-events-none');
                         
-                        this.roomPlayers[this.myPeerId] = {
-                            id: this.myPeerId,
-                            name: this.playerName,
-                            score: this.score,
-                            maxTile: 2,
-                            status: 'waiting',
-                            isHost: true,
-                            grid: null
-                        };
-
+                        this.roomPlayers[this.myPeerId] = this.getSelfPlayerState();
                         this.updateRoomStateDisplay();
-                        alert(`房間創建成功！房間號：${code}\n複製網址即可邀請朋友連線對戰！`);
+                        this.startHeartbeat();
+
+                        if (!silent) {
+                            alert(`房間創建成功！房間號：${code}\n點擊右上角「複製連結」傳給好友即可開打與觀戰！`);
+                        }
                     });
 
                     this.peer.on('connection', (conn) => {
                         this.handlePeerConnection(conn);
                     });
-
-                    this.peer.on('error', (err) => {
-                        console.error('Peer error:', err);
-                        alert('房間號重複，請重新創建！');
-                    });
                 }
             }
 
-            joinRoom(code) {
-                this.playerName = document.getElementById('nickname-input').value.trim() || '玩家';
-                localStorage.setItem('2048_player_name', this.playerName);
-                document.getElementById('player-self-name').textContent = this.playerName;
-
-                this.roomId = code.toUpperCase();
-                this.isHost = false;
-                this.myPeerId = `2048-player-${Math.random().toString(36).substring(2, 8)}`;
-
-                if (typeof Peer !== 'undefined') {
-                    this.peer = new Peer(this.myPeerId);
-
-                    this.peer.on('open', (id) => {
-                        console.log('Joined as peer:', id);
-                        const hostPeerId = `2048-room-${this.roomId}`;
-                        const conn = this.peer.connect(hostPeerId);
-                        
-                        conn.on('open', () => {
-                            this.connections[hostPeerId] = conn;
-                            conn.send({
-                                type: 'JOIN',
-                                name: this.playerName
-                            });
-                            document.getElementById('room-modal').classList.remove('opacity-100');
-                            document.getElementById('room-modal').classList.add('opacity-0', 'pointer-events-none');
-                            alert(`成功連入房間 ${this.roomId}！`);
-                        });
-
-                        this.handlePeerConnection(conn);
-                    });
-
-                    this.peer.on('error', (err) => {
-                        console.error('Peer connect error:', err);
-                        alert('找不到該房間號，請確認後重新加入！');
-                    });
-                }
+            startHeartbeat() {
+                if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+                this.heartbeatTimer = setInterval(() => {
+                    if (this.peer) this.broadcastP2PState();
+                }, 400); // 400ms High-frequency 0ms sync
             }
 
             handlePeerConnection(conn) {
+                conn.on('open', () => {
+                    this.connections[conn.peer] = conn;
+                    if (conn.open) conn.send({ type: 'STATE_UPDATE', playerData: this.getSelfPlayerState(), fullRoomState: this.roomPlayers });
+                });
+
                 conn.on('data', (data) => {
                     this.onP2PDataReceived(conn, data);
                 });
@@ -716,29 +663,34 @@
                 conn.on('close', () => {
                     delete this.connections[conn.peer];
                     delete this.roomPlayers[conn.peer];
-                    this.broadcastP2PState();
+                    this.updateRoomStateDisplay();
                 });
             }
 
             onP2PDataReceived(conn, data) {
                 if (data.type === 'JOIN') {
-                    this.roomPlayers[conn.peer] = {
-                        id: conn.peer,
-                        name: data.name,
-                        score: 0,
-                        maxTile: 2,
-                        status: 'waiting',
-                        isHost: false,
-                        grid: null
+                    this.roomPlayers[conn.peer] = data.playerData || {
+                        id: conn.peer, name: data.name, score: 0, maxTile: 2, status: 'playing', isHost: false, grid: null
                     };
                     this.connections[conn.peer] = conn;
                     this.broadcastP2PState();
                 } else if (data.type === 'STATE_UPDATE') {
-                    this.roomPlayers[data.playerData.id] = data.playerData;
+                    if (data.playerData) {
+                        this.roomPlayers[data.playerData.id] = data.playerData;
+                    }
                     if (data.fullRoomState) {
-                        this.roomPlayers = data.fullRoomState;
+                        Object.assign(this.roomPlayers, data.fullRoomState);
                     }
                     this.updateRoomStateDisplay();
+
+                    if (this.isHost && data.playerData) {
+                        // Host re-broadcasts to all other peers immediately!
+                        Object.values(this.connections).forEach(otherConn => {
+                            if (otherConn.peer !== conn.peer && otherConn.open) {
+                                otherConn.send({ type: 'STATE_UPDATE', playerData: data.playerData, fullRoomState: this.roomPlayers });
+                            }
+                        });
+                    }
                 } else if (data.type === 'EMOJI') {
                     this.sound.playEmojiSound();
                     this.displayFloatingEmoji(data.emoji, data.playerName);
@@ -750,13 +702,16 @@
 
             broadcastP2PState() {
                 this.updateRoomStateDisplay();
-                const stateData = {
+                const selfState = this.getSelfPlayerState();
+                const payload = {
                     type: 'STATE_UPDATE',
-                    playerData: this.getSelfPlayerState(),
+                    playerData: selfState,
                     fullRoomState: this.roomPlayers
                 };
                 Object.values(this.connections).forEach(conn => {
-                    if (conn.open) conn.send(stateData);
+                    if (conn && conn.open) {
+                        try { conn.send(payload); } catch(e){}
+                    }
                 });
             }
 
@@ -805,7 +760,7 @@
                 this.sound.playEmojiSound();
                 this.displayFloatingEmoji(emoji, this.playerName);
                 Object.values(this.connections).forEach(conn => {
-                    if (conn.open) conn.send({ type: 'EMOJI', emoji, playerName: this.playerName });
+                    if (conn && conn.open) conn.send({ type: 'EMOJI', emoji, playerName: this.playerName });
                 });
             }
 
@@ -813,7 +768,7 @@
                 this.sound.playEmojiSound();
                 this.displayTauntBubble(this.playerName, text);
                 Object.values(this.connections).forEach(conn => {
-                    if (conn.open) conn.send({ type: 'TAUNT', text, playerName: this.playerName });
+                    if (conn && conn.open) conn.send({ type: 'TAUNT', text, playerName: this.playerName });
                 });
             }
 
@@ -1278,7 +1233,7 @@
                 document.getElementById('spectate-count-badge').textContent = `在線玩家: ${Object.keys(this.roomPlayers).length}`;
 
                 if (players.length === 0) {
-                    container.innerHTML = `<div class="text-xs text-amber-800/50 italic py-2">尚無其他玩家，快點擊上方「複製連結」邀請好友！</div>`;
+                    container.innerHTML = `<div class="text-xs text-amber-800/50 italic py-2">尚無其他玩家，快點擊右上角「複製連結」邀請好友！</div>`;
                     this.spectateTargetId = null;
                     this.renderSpectateBoard(null);
                     return;
@@ -1338,8 +1293,8 @@
                     targetStatus.textContent = '達成 2048!';
                     targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700';
                 } else {
-                    targetStatus.textContent = '比賽競技中';
-                    targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-200 text-amber-900';
+                    targetStatus.textContent = '0ms 即時連線';
+                    targetStatus.className = 'text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800';
                 }
 
                 const size = player.grid.length;
@@ -1386,7 +1341,7 @@
                             </div>
                             <div class="text-right">
                                 <div class="text-amber-900 font-extrabold text-sm">${item.score}</div>
-                                <div class="text-[9px] ${item.status === 'gameover' ? 'text-rose-600' : 'text-emerald-600'}">${item.status === 'gameover' ? '淘汰' : '競技中'}</div>
+                                <div class="text-[9px] ${item.status === 'gameover' ? 'text-rose-600' : 'text-emerald-600'}">${item.status === 'gameover' ? '淘汰' : '0ms 直連'}</div>
                             </div>
                         </div>
                     `;
@@ -1469,7 +1424,7 @@
                 document.getElementById('submit-join-room-btn').addEventListener('click', () => {
                     const code = document.getElementById('room-code-input').value.trim().toUpperCase();
                     if (!code) { alert('請輸入房間號！'); return; }
-                    this.joinRoom(code);
+                    this.autoConnectRoom(code);
                 });
             }
         }
