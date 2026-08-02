@@ -141,7 +141,7 @@
         .tile-2048 { background-color: #edc22e; color: #f9f6f2; font-size: 1.65rem; box-shadow: 0 0 34px 9px rgba(237, 194, 46, 0.9); }
         .tile-4096 { background-color: #a040fb; color: #f9f6f2; font-size: 1.65rem; box-shadow: 0 0 34px 9px rgba(160, 64, 251, 0.9); }
         .tile-8192 { background-color: #f5222d; color: #f9f6f2; font-size: 1.65rem; box-shadow: 0 0 34px 9px rgba(245, 34, 45, 0.9); }
-        .tile-16384 { background-color: #13c2c2; color: #f9f6f2; font-size: 1.35rem; box-shadow: 0 0 34px 9px rgba(19, 194, 194, 0.9); }
+        .tile-16384 { background-color: #13c2c2; color: #f9f6f2; font-size: 1.35rem; shadow: 0 0 34px 9px rgba(19, 194, 194, 0.9); }
         .tile-super { background-color: #3c3a32; color: #f9f6f2; font-size: 1.35rem; box-shadow: 0 0 25px rgba(0,0,0,0.5); }
 
         /* 手機/小螢幕調適字型 */
@@ -915,19 +915,22 @@
                 if (document.getElementById('portal-view')) document.getElementById('portal-view').classList.remove('hidden');
                 if (document.getElementById('game-view')) document.getElementById('game-view').classList.add('hidden');
                 
-                // 依據用戶要求，大廳主頁 URL 設為 .../2048-game/home
                 this.roomId = null;
                 this.isHost = false;
                 localStorage.removeItem('2048_active_room');
 
-                let targetPath = window.location.pathname;
-                if (!targetPath.endsWith('/home')) {
-                    targetPath = targetPath.replace(/\/$/, '') + '/home';
+                // 強制更改網址列為 /2048-game/home
+                let targetHomeUrl = '/2048-game/home';
+                if (window.location.hostname.includes('github.io')) {
+                    targetHomeUrl = 'https://liguoguo103-beep.github.io/2048-game/home';
                 }
 
-                if (window.history.replaceState) {
-                    window.history.replaceState(null, '', targetPath);
+                try {
+                    window.history.pushState({ page: 'home' }, '', targetHomeUrl);
+                } catch(e) {
+                    try { window.history.replaceState({ page: 'home' }, '', targetHomeUrl); } catch(err){}
                 }
+
                 const roomBadge = document.getElementById('room-badge');
                 if (roomBadge) roomBadge.classList.add('hidden');
 
@@ -951,7 +954,7 @@
             openShareModal() {
                 if (!this.roomId) return;
                 const shareModal = document.getElementById('share-modal');
-                const baseUrl = `${window.location.origin}${window.location.pathname.replace(/\/home$/, '')}`;
+                const baseUrl = `${window.location.origin}${window.location.pathname.replace(/\/home\/?$/, '')}`;
                 const shareUrl = `${baseUrl}?room=${this.roomId}`;
                 
                 if (document.getElementById('share-modal-room-code')) document.getElementById('share-modal-room-code').textContent = this.roomId;
@@ -1007,7 +1010,7 @@
             initP2P() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const roomFromUrl = urlParams.get('room') || localStorage.getItem('2048_active_room');
-                const isHomePath = window.location.pathname.endsWith('/home');
+                const isHomePath = window.location.pathname.endsWith('/home') || window.location.pathname.endsWith('/home/');
 
                 if (roomFromUrl && !isHomePath) {
                     this.showGameView();
@@ -1019,9 +1022,9 @@
 
             syncRoomToStorageAndUrl(code) {
                 localStorage.setItem('2048_active_room', code);
-                const baseUrl = window.location.pathname.replace(/\/home$/, '');
-                if (window.history.replaceState) {
-                    window.history.replaceState(null, '', `${baseUrl}?room=${code}`);
+                const baseUrl = window.location.pathname.replace(/\/home\/?$/, '');
+                if (window.history.pushState) {
+                    window.history.pushState(null, '', `${baseUrl}?room=${code}`);
                 }
             }
 
