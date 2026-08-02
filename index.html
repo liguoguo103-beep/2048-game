@@ -435,28 +435,30 @@
                 </div>
             </div>
 
-            <!-- 主 2048 棋盤容器 -->
-            <main class="w-full flex-1 relative bg-board rounded-3xl p-3 sm:p-4 shadow-2xl board-container" id="board-container" style="min-height:0;">
-                <div id="grid-background" class="w-full h-full grid gap-3 sm:gap-3.5"></div>
-                <div id="tile-container" class="absolute inset-3 sm:inset-4 pointer-events-none"></div>
+            <!-- 主 2048 棋盤容器 (flex-1 wrapper 讓棋盤撐滿高度並保持正方形) -->
+            <div class="flex-1 w-full flex items-center justify-center" style="min-height:0;">
+                <main class="relative bg-board rounded-3xl p-3 sm:p-4 shadow-2xl board-container" id="board-container" style="height:100%;max-height:100%;aspect-ratio:1/1;max-width:100%;">
+                    <div id="grid-background" class="w-full h-full grid gap-3 sm:gap-3.5"></div>
+                    <div id="tile-container" class="absolute inset-3 sm:inset-4 pointer-events-none"></div>
 
-                <!-- 遊戲結束/勝負 Overlay -->
-                <div id="game-overlay" class="absolute inset-0 bg-amber-950/85 backdrop-blur-custom rounded-3xl flex flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-all duration-300 z-30">
-                    <div id="overlay-icon" class="text-6xl mb-3 text-yellow-400">
-                        <i class="fas fa-trophy"></i>
+                    <!-- 遊戲結束/勝負 Overlay -->
+                    <div id="game-overlay" class="absolute inset-0 bg-amber-950/85 backdrop-blur-custom rounded-3xl flex flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-all duration-300 z-30">
+                        <div id="overlay-icon" class="text-6xl mb-3 text-yellow-400">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h2 id="overlay-title" class="text-3xl sm:text-4xl font-black text-white mb-2">恭喜達成 2048！</h2>
+                        <p id="overlay-msg" class="text-amber-200 text-sm mb-6 font-bold">你合成了最高方塊！</p>
+                        <div class="flex gap-3">
+                            <button id="keep-going-btn" class="btn-action bg-amber-500 hover:bg-amber-600 text-white font-extrabold px-5 py-2.5 rounded-2xl text-xs sm:text-sm shadow-lg hidden">
+                                繼續挑戰
+                            </button>
+                            <button id="overlay-restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold px-6 py-2.5 rounded-2xl text-xs sm:text-sm shadow-lg">
+                                再玩一局
+                            </button>
+                        </div>
                     </div>
-                    <h2 id="overlay-title" class="text-3xl sm:text-4xl font-black text-white mb-2">恭喜達成 2048！</h2>
-                    <p id="overlay-msg" class="text-amber-200 text-sm mb-6 font-bold">你合成了最高方塊！</p>
-                    <div class="flex gap-3">
-                        <button id="keep-going-btn" class="btn-action bg-amber-500 hover:bg-amber-600 text-white font-extrabold px-5 py-2.5 rounded-2xl text-xs sm:text-sm shadow-lg hidden">
-                            繼續挑戰
-                        </button>
-                        <button id="overlay-restart-btn" class="btn-action bg-amber-800 hover:bg-amber-900 text-white font-extrabold px-6 py-2.5 rounded-2xl text-xs sm:text-sm shadow-lg">
-                            再玩一局
-                        </button>
-                    </div>
-                </div>
-            </main>
+                </main>
+            </div>
 
             <!-- 手機十字方向按鈕 -->
             <div class="w-full flex flex-col items-center">
