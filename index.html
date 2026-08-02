@@ -289,7 +289,7 @@
     <div id="game-view" class="hidden w-full grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 items-start">
         
         <!-- ==================== 左欄：即時觀戰 Panel (4 Cols) ==================== -->
-        <section class="lg:col-span-4 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[480px]">
+        <section class="lg:col-span-4 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[380px] lg:min-h-[480px]">
             <div class="flex justify-between items-center pb-2.5 border-b border-amber-100 mb-3">
                 <div class="flex items-center gap-2">
                     <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
@@ -325,7 +325,7 @@
             </div>
 
             <!-- 即時觀戰主棋盤畫面 -->
-            <div class="flex-1 flex flex-col items-center justify-center bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 relative min-h-[260px]">
+            <div class="flex-1 flex flex-col items-center justify-center bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 relative min-h-[220px]">
                 <div id="spectate-target-status" class="mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-amber-200 text-amber-900">
                     等待連線中
                 </div>
@@ -387,6 +387,9 @@
                 </div>
 
                 <div class="flex gap-1.5">
+                    <button id="open-room-modal-btn" class="btn-action bg-yellow-500 hover:bg-yellow-600 text-amber-950 font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1">
+                        <i class="fas fa-users"></i> <span id="room-status-btn-text">房間大廳</span>
+                    </button>
                     <button id="undo-btn" class="btn-action bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl px-2.5 py-1.5 shadow flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
                         <i class="fas fa-undo"></i> 復原
                     </button>
@@ -451,7 +454,7 @@
         </section>
 
         <!-- ==================== 右欄：即時排行榜 & 房間對戰聊天室 (3 Cols) ==================== -->
-        <section class="lg:col-span-3 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[480px]">
+        <section class="lg:col-span-3 bg-white/90 rounded-2xl border-2 border-amber-200/80 p-3 sm:p-4 shadow-sm flex flex-col h-full min-h-[380px] lg:min-h-[480px]">
             <!-- 排行榜區塊 -->
             <div class="flex justify-between items-center pb-2 border-b border-amber-100 mb-2">
                 <div class="flex items-center gap-2">
@@ -462,7 +465,7 @@
                 </div>
             </div>
 
-            <div id="leaderboard-list" class="flex-1 flex flex-col gap-1.5 overflow-y-auto max-h-[160px] scrollbar-thin mb-3">
+            <div id="leaderboard-list" class="flex-1 flex flex-col gap-1.5 overflow-y-auto max-h-[140px] sm:max-h-[160px] scrollbar-thin mb-3">
                 <div class="text-xs text-amber-800/60 text-center py-4">
                     連線中... 點擊右上角「複製連結」傳給好友即可連線對戰！
                 </div>
@@ -481,7 +484,7 @@
                 </div>
 
                 <!-- 聊天紀錄訊息框 -->
-                <div id="chat-messages-log" class="flex-1 bg-amber-50/70 border border-amber-200 rounded-xl p-2 space-y-1.5 overflow-y-auto max-h-[180px] min-h-[120px] scrollbar-thin text-xs">
+                <div id="chat-messages-log" class="flex-1 bg-amber-50/70 border border-amber-200 rounded-xl p-2 space-y-1.5 overflow-y-auto max-h-[160px] min-h-[100px] scrollbar-thin text-xs">
                     <div class="text-[10px] text-amber-800/60 text-center italic py-2">歡迎來到對戰聊天室，發送訊息讓好友看見！</div>
                 </div>
 
@@ -751,29 +754,35 @@
                 const submitGoogleLoginBtn = document.getElementById('submit-google-login-btn');
 
                 const openGoogleModal = () => {
-                    document.getElementById('google-email-input').value = '';
-                    document.getElementById('google-name-input').value = '';
-                    googleModal.classList.remove('opacity-0', 'pointer-events-none');
-                    googleModal.classList.add('opacity-100');
+                    if (document.getElementById('google-email-input')) document.getElementById('google-email-input').value = '';
+                    if (document.getElementById('google-name-input')) document.getElementById('google-name-input').value = '';
+                    if (googleModal) {
+                        googleModal.classList.remove('opacity-0', 'pointer-events-none');
+                        googleModal.classList.add('opacity-100');
+                    }
                 };
 
                 const closeGoogleModal = () => {
-                    googleModal.classList.remove('opacity-100');
-                    googleModal.classList.add('opacity-0', 'pointer-events-none');
+                    if (googleModal) {
+                        googleModal.classList.remove('opacity-100');
+                        googleModal.classList.add('opacity-0', 'pointer-events-none');
+                    }
                 };
 
                 if (googleBtn) googleBtn.addEventListener('click', openGoogleModal);
                 if (portalGoogleBtn) portalGoogleBtn.addEventListener('click', openGoogleModal);
                 if (closeGoogleModalBtn) closeGoogleModalBtn.addEventListener('click', closeGoogleModal);
 
-                googleModal.addEventListener('click', (e) => {
-                    if (e.target === googleModal) closeGoogleModal();
-                });
+                if (googleModal) {
+                    googleModal.addEventListener('click', (e) => {
+                        if (e.target === googleModal) closeGoogleModal();
+                    });
+                }
 
                 if (submitGoogleLoginBtn) {
                     submitGoogleLoginBtn.addEventListener('click', () => {
-                        const emailInput = document.getElementById('google-email-input').value.trim();
-                        const nameInput = document.getElementById('google-name-input').value.trim();
+                        const emailInput = document.getElementById('google-email-input') ? document.getElementById('google-email-input').value.trim() : '';
+                        const nameInput = document.getElementById('google-name-input') ? document.getElementById('google-name-input').value.trim() : '';
                         
                         const email = emailInput || 'user@gmail.com';
                         const name = nameInput || this.generateSmartName();
@@ -834,21 +843,21 @@
                     if (portalDesc) portalDesc.textContent = '未登入帳號';
                 }
 
-                document.getElementById('player-self-name').textContent = this.playerName;
-                document.getElementById('nickname-input').value = this.playerName;
-                document.getElementById('portal-stat-score').textContent = this.bestScore;
-                document.getElementById('portal-stat-tile').textContent = this.bestTile;
+                if (document.getElementById('player-self-name')) document.getElementById('player-self-name').textContent = this.playerName;
+                if (document.getElementById('nickname-input')) document.getElementById('nickname-input').value = this.playerName;
+                if (document.getElementById('portal-stat-score')) document.getElementById('portal-stat-score').textContent = this.bestScore;
+                if (document.getElementById('portal-stat-tile')) document.getElementById('portal-stat-tile').textContent = this.bestTile;
             }
 
             showPortalView() {
-                document.getElementById('portal-view').classList.remove('hidden');
-                document.getElementById('game-view').classList.add('hidden');
+                if (document.getElementById('portal-view')) document.getElementById('portal-view').classList.remove('hidden');
+                if (document.getElementById('game-view')) document.getElementById('game-view').classList.add('hidden');
                 this.updateAuthUI();
             }
 
             showGameView() {
-                document.getElementById('portal-view').classList.add('hidden');
-                document.getElementById('game-view').classList.remove('hidden');
+                if (document.getElementById('portal-view')) document.getElementById('portal-view').classList.add('hidden');
+                if (document.getElementById('game-view')) document.getElementById('game-view').classList.remove('hidden');
             }
 
             closeRoomModal() {
@@ -882,9 +891,9 @@
             }
 
             initUI() {
-                this.bestScoreEl.textContent = this.bestScore;
-                document.getElementById('player-self-name').textContent = this.playerName;
-                document.getElementById('nickname-input').value = this.playerName;
+                if (this.bestScoreEl) this.bestScoreEl.textContent = this.bestScore;
+                if (document.getElementById('player-self-name')) document.getElementById('player-self-name').textContent = this.playerName;
+                if (document.getElementById('nickname-input')) document.getElementById('nickname-input').value = this.playerName;
                 this.setupInputs();
                 this.setupModals();
             }
@@ -896,15 +905,15 @@
                     this.showGameView();
                     this.autoConnectRoom(roomFromUrl.toUpperCase());
                 }
-                // 網頁開啟時不主動調用 createRoom 防止 Peer 錯誤迴圈卡死！
             }
 
             autoConnectRoom(code) {
                 this.closeRoomModal();
-                const rawName = document.getElementById('nickname-input').value.trim() || this.playerName;
-                this.playerName = this.getUniquePlayerName(rawName);
+                const nicknameInput = document.getElementById('nickname-input');
+                const rawName = nicknameInput ? nicknameInput.value.trim() : this.playerName;
+                this.playerName = this.getUniquePlayerName(rawName || this.playerName);
                 localStorage.setItem('2048_player_name', this.playerName);
-                document.getElementById('player-self-name').textContent = this.playerName;
+                if (document.getElementById('player-self-name')) document.getElementById('player-self-name').textContent = this.playerName;
 
                 this.roomId = code;
                 this.myPeerId = `2048-peer-${Math.random().toString(36).substring(2, 8)}`;
@@ -914,14 +923,18 @@
                         if (this.peer) try { this.peer.destroy(); } catch(e){}
                         this.peer = new Peer(this.myPeerId, PEER_CONFIG);
 
+                        let connected = false;
+
                         this.peer.on('open', () => {
                             const hostPeerId = `2048-room-${this.roomId}`;
                             const conn = this.peer.connect(hostPeerId, { reliable: true });
 
                             conn.on('open', () => {
+                                connected = true;
                                 this.connections[hostPeerId] = conn;
                                 conn.send({ type: 'JOIN', name: this.playerName, playerData: this.getSelfPlayerState() });
                                 this.updateRoomStateDisplay();
+                                this.startHeartbeat();
                             });
 
                             this.handlePeerConnection(conn);
@@ -929,21 +942,26 @@
 
                         this.peer.on('error', (err) => {
                             console.warn('AutoConnect Peer Error:', err);
-                            // 失敗時無縫轉為建立該房間 Host，不遞迴！
-                            this.createRoom(code, true);
+                            if (!connected) {
+                                alert(`無法連線至房間【${code}】！\n請確認房間號是否正確，或 Host 玩家是否在線。`);
+                                this.showPortalView();
+                            }
                         });
                     } catch(e) {
                         console.error('AutoConnect Exception:', e);
+                        alert('連線元件初始化失敗，已返回大廳');
+                        this.showPortalView();
                     }
                 }
             }
 
             createRoom(customCode, silent = false) {
-                this.closeRoomModal(); // 0 毫秒即時關閉 Modal，保證不當機！
-                const rawName = document.getElementById('nickname-input').value.trim() || this.playerName;
-                this.playerName = this.getUniquePlayerName(rawName);
+                this.closeRoomModal();
+                const nicknameInput = document.getElementById('nickname-input');
+                const rawName = nicknameInput ? nicknameInput.value.trim() : this.playerName;
+                this.playerName = this.getUniquePlayerName(rawName || this.playerName);
                 localStorage.setItem('2048_player_name', this.playerName);
-                document.getElementById('player-self-name').textContent = this.playerName;
+                if (document.getElementById('player-self-name')) document.getElementById('player-self-name').textContent = this.playerName;
 
                 const code = customCode || Math.random().toString(36).substring(2, 8).toUpperCase();
                 this.roomId = code;
@@ -971,7 +989,6 @@
 
                         this.peer.on('error', (err) => {
                             console.warn('CreateRoom Peer Error:', err);
-                            // 絕對不再次遞迴調用 createRoom，避免瀏覽器 JS 死循環當機！
                         });
                     } catch(e) {
                         console.error('CreateRoom Exception:', e);
@@ -981,9 +998,12 @@
 
             startHeartbeat() {
                 if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+                // 2000ms 心跳保活，日常移動則由 move() / restart() 事件驅動即時廣播，極致省頻寬！
                 this.heartbeatTimer = setInterval(() => {
-                    if (this.peer) this.broadcastP2PState();
-                }, 400);
+                    if (this.peer && Object.keys(this.connections).length > 0) {
+                        this.broadcastP2PState();
+                    }
+                }, 2000);
             }
 
             handlePeerConnection(conn) {
@@ -1051,6 +1071,7 @@
 
             sendChatMessage() {
                 const input = document.getElementById('chat-input');
+                if (!input) return;
                 const text = input.value.trim();
                 if (!text) return;
                 input.value = '';
@@ -1072,6 +1093,7 @@
 
             addChatMessage(sender, text, time, isSelf) {
                 const log = document.getElementById('chat-messages-log');
+                if (!log) return;
                 const msgEl = document.createElement('div');
                 msgEl.className = `flex flex-col p-1.5 rounded-xl border ${isSelf ? 'bg-amber-100/90 border-amber-300 self-end text-right ml-4' : 'bg-white border-amber-200 self-start mr-4'}`;
                 msgEl.innerHTML = `
@@ -1126,10 +1148,16 @@
 
             updateRoomStateDisplay() {
                 if (this.roomId) {
-                    document.getElementById('room-badge').classList.remove('hidden');
-                    document.getElementById('room-badge').classList.add('flex');
-                    document.getElementById('room-code-display').textContent = this.roomId;
-                    document.getElementById('room-status-btn-text').textContent = `房間: ${this.roomId}`;
+                    const badge = document.getElementById('room-badge');
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                        badge.classList.add('flex');
+                    }
+                    const codeDisplay = document.getElementById('room-code-display');
+                    if (codeDisplay) codeDisplay.textContent = this.roomId;
+
+                    const roomStatusBtn = document.getElementById('room-status-btn-text');
+                    if (roomStatusBtn) roomStatusBtn.textContent = `房間: ${this.roomId}`;
                 }
 
                 if (this.myPeerId) {
@@ -1208,16 +1236,17 @@
             }
 
             restart() {
-                this.size = parseInt(document.getElementById('grid-size-select').value, 10);
+                const select = document.getElementById('grid-size-select');
+                if (select) this.size = parseInt(select.value, 10);
                 this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
                 this.tiles = [];
-                this.tileContainer.innerHTML = '';
+                if (this.tileContainer) this.tileContainer.innerHTML = '';
                 this.score = 0;
                 this.moveCount = 0;
                 this.history = [];
                 this.won = false;
                 this.keepPlaying = false;
-                this.over = false;
+                this.over = false; // 優先更新 over=false，確保廣播狀態不卡在淘汰狀態！
 
                 this.buildBackgroundGrid();
                 this.hideOverlay();
@@ -1226,6 +1255,8 @@
                 this.addRandomTile();
                 this.addRandomTile();
                 this.actuate();
+                
+                // 事件驅動：重置後立即廣播一次最新狀態
                 if (this.peer) this.broadcastP2PState();
             }
 
@@ -1267,7 +1298,7 @@
                 this.over = lastState.over;
                 this.grid = Array(this.size).fill(null).map(() => Array(this.size).fill(null));
                 this.tiles = [];
-                this.tileContainer.innerHTML = '';
+                if (this.tileContainer) this.tileContainer.innerHTML = '';
                 for (let r = 0; r < this.size; r++) {
                     for (let c = 0; c < this.size; c++) {
                         const val = lastState.gridValues[r][c];
@@ -1286,7 +1317,7 @@
                 if (this.peer) this.broadcastP2PState();
             }
 
-            updateUndoButton() { this.undoBtn.disabled = this.history.length === 0; }
+            updateUndoButton() { if (this.undoBtn) this.undoBtn.disabled = this.history.length === 0; }
 
             prepareTiles() {
                 this.tiles.forEach(tile => {
@@ -1360,6 +1391,8 @@
                     this.updateScore(mergedTotalScore);
                     this.addRandomTile();
                     this.actuate();
+                    
+                    // 事件驅動（Event-driven）：每次移動成功即刻廣播 state
                     if (this.peer) this.broadcastP2PState();
 
                     if (!this.won && !this.keepPlaying && this.hasTileValue(2048)) {
@@ -1458,9 +1491,9 @@
             updateScore(delta, isReset = false) {
                 if (isReset) this.score = delta;
                 else this.score += delta;
-                this.scoreEl.textContent = this.score;
+                if (this.scoreEl) this.scoreEl.textContent = this.score;
 
-                if (delta > 0) {
+                if (delta > 0 && this.scoreContainer) {
                     this.scoreContainer.classList.remove('bump-animation');
                     void this.scoreContainer.offsetWidth;
                     this.scoreContainer.classList.add('bump-animation');
@@ -1468,13 +1501,13 @@
 
                 if (this.score > this.bestScore) {
                     this.bestScore = this.score;
-                    this.bestScoreEl.textContent = this.bestScore;
+                    if (this.bestScoreEl) this.bestScoreEl.textContent = this.bestScore;
                     localStorage.setItem('2048_best_score', this.bestScore.toString());
                 }
             }
 
             showScoreFloat(addedScore) {
-                if (addedScore <= 0) return;
+                if (addedScore <= 0 || !this.scoreContainer) return;
                 const floatEl = document.createElement('div');
                 floatEl.className = 'score-float';
                 floatEl.textContent = `+${addedScore}`;
@@ -1489,28 +1522,33 @@
                 const icon = document.getElementById('overlay-icon');
                 const keepBtn = document.getElementById('keep-going-btn');
                 if (isWin) {
-                    title.textContent = '恭喜達成 2048！';
-                    msg.textContent = '你的智謀超群！要繼續挑戰更高的夢幻數字嗎？';
-                    icon.innerHTML = '<i class="fas fa-crown text-yellow-400"></i>';
-                    keepBtn.classList.remove('hidden');
+                    if (title) title.textContent = '恭喜達成 2048！';
+                    if (msg) msg.textContent = '你的智謀超群！要繼續挑戰更高的夢幻數字嗎？';
+                    if (icon) icon.innerHTML = '<i class="fas fa-crown text-yellow-400"></i>';
+                    if (keepBtn) keepBtn.classList.remove('hidden');
                 } else {
-                    title.textContent = '遊戲結束！';
-                    msg.textContent = '盤面已滿無路可走！';
-                    icon.innerHTML = '<i class="fas fa-skull text-amber-500"></i>';
-                    keepBtn.classList.add('hidden');
+                    if (title) title.textContent = '遊戲結束！';
+                    if (msg) msg.textContent = '盤面已滿無路可走！';
+                    if (icon) icon.innerHTML = '<i class="fas fa-skull text-amber-500"></i>';
+                    if (keepBtn) keepBtn.classList.add('hidden');
                 }
-                this.overlay.classList.remove('opacity-0', 'pointer-events-none');
-                this.overlay.classList.add('opacity-100');
+                if (this.overlay) {
+                    this.overlay.classList.remove('opacity-0', 'pointer-events-none');
+                    this.overlay.classList.add('opacity-100');
+                }
             }
 
             hideOverlay() {
-                this.overlay.classList.remove('opacity-100');
-                this.overlay.classList.add('opacity-0', 'pointer-events-none');
+                if (this.overlay) {
+                    this.overlay.classList.remove('opacity-100');
+                    this.overlay.classList.add('opacity-0', 'pointer-events-none');
+                }
             }
 
             renderSpectateList() {
                 const players = Object.values(this.roomPlayers).filter(p => p.id !== this.myPeerId);
-                document.getElementById('spectate-count-badge').textContent = `在線玩家: ${Object.keys(this.roomPlayers).length}`;
+                const badge = document.getElementById('spectate-count-badge');
+                if (badge) badge.textContent = `在线玩家: ${Object.keys(this.roomPlayers).length}`;
 
                 if (!this.spectateTargetId && players.length > 0) {
                     this.spectateTargetId = players[0].id;
@@ -1534,48 +1572,55 @@
                 const maxTileVal = document.getElementById('spectate-max-tile-val');
 
                 if (!player || !player.grid) {
-                    targetName.textContent = player ? player.name : '尚無其他人';
-                    targetStatus.textContent = '等待玩家加入';
-                    miniGrid.style.gridTemplateColumns = `repeat(4, minmax(0, 1fr))`;
-                    miniGrid.innerHTML = `<div class="col-span-4 text-center text-amber-800/50 text-xs py-10 font-bold">點擊右上角複製連結邀請好友加入觀戰！</div>`;
-                    scoreVal.textContent = player ? player.score : 0;
-                    maxTileVal.textContent = player ? player.maxTile : 0;
+                    if (targetName) targetName.textContent = player ? player.name : '尚無其他人';
+                    if (targetStatus) targetStatus.textContent = '等待玩家加入';
+                    if (miniGrid) {
+                        miniGrid.style.gridTemplateColumns = `repeat(4, minmax(0, 1fr))`;
+                        miniGrid.innerHTML = `<div class="col-span-4 text-center text-amber-800/50 text-xs py-10 font-bold">點擊右上角複製連結邀請好友加入觀戰！</div>`;
+                    }
+                    if (scoreVal) scoreVal.textContent = player ? player.score : 0;
+                    if (maxTileVal) maxTileVal.textContent = player ? player.maxTile : 0;
                     return;
                 }
 
-                targetName.textContent = player.name;
-                scoreVal.textContent = player.score;
-                maxTileVal.textContent = player.maxTile || 2;
+                if (targetName) targetName.textContent = player.name;
+                if (scoreVal) scoreVal.textContent = player.score;
+                if (maxTileVal) maxTileVal.textContent = player.maxTile || 2;
 
-                if (player.status === 'gameover') {
-                    targetStatus.textContent = '已淘汰';
-                    targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-rose-100 text-rose-700';
-                } else if (player.status === 'won') {
-                    targetStatus.textContent = '達成 2048!';
-                    targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
-                } else {
-                    targetStatus.textContent = '對戰中';
-                    targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
-                }
-
-                const size = player.grid.length;
-                miniGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
-                miniGrid.style.gridTemplateRows = `repeat(${size}, minmax(0, 1fr))`;
-
-                let html = '';
-                for (let r = 0; r < size; r++) {
-                    for (let c = 0; c < size; c++) {
-                        const val = player.grid[r][c];
-                        let colorClass = `tile-${val > 0 ? val : 'bg'}`;
-                        if (val > 16384) colorClass = 'tile-super';
-                        html += `<div class="mini-tile ${val > 0 ? colorClass : 'bg-tileBg/40'} text-xs sm:text-sm">${val > 0 ? val : ''}</div>`;
+                if (targetStatus) {
+                    if (player.status === 'gameover') {
+                        targetStatus.textContent = '已淘汰';
+                        targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-rose-100 text-rose-700';
+                    } else if (player.status === 'won') {
+                        targetStatus.textContent = '達成 2048!';
+                        targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
+                    } else {
+                        targetStatus.textContent = '對戰中';
+                        targetStatus.className = 'mb-2 text-[11px] font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
                     }
                 }
-                miniGrid.innerHTML = html;
+
+                if (miniGrid) {
+                    const size = player.grid.length;
+                    miniGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+                    miniGrid.style.gridTemplateRows = `repeat(${size}, minmax(0, 1fr))`;
+
+                    let html = '';
+                    for (let r = 0; r < size; r++) {
+                        for (let c = 0; c < size; c++) {
+                            const val = player.grid[r][c];
+                            let colorClass = `tile-${val > 0 ? val : 'bg'}`;
+                            if (val > 16384) colorClass = 'tile-super';
+                            html += `<div class="mini-tile ${val > 0 ? colorClass : 'bg-tileBg/40'} text-xs sm:text-sm">${val > 0 ? val : ''}</div>`;
+                        }
+                    }
+                    miniGrid.innerHTML = html;
+                }
             }
 
             renderLeaderboard(list) {
                 const container = document.getElementById('leaderboard-list');
+                if (!container) return;
                 if (!list || list.length === 0) {
                     container.innerHTML = `<div class="text-xs text-amber-800/60 text-center py-6">尚無排名資料</div>`;
                     return;
@@ -1621,120 +1666,189 @@
                 });
 
                 let touchStartX = 0, touchStartY = 0;
-                this.boardContainer.addEventListener('touchstart', (e) => {
-                    if (e.touches.length > 0) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }
-                }, { passive: true });
+                if (this.boardContainer) {
+                    this.boardContainer.addEventListener('touchstart', (e) => {
+                        if (e.touches.length > 0) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }
+                    }, { passive: true });
 
-                this.boardContainer.addEventListener('touchend', (e) => {
-                    if (!touchStartX || !touchStartY) return;
-                    const dx = e.changedTouches[0].clientX - touchStartX;
-                    const dy = e.changedTouches[0].clientY - touchStartY;
-                    if (Math.max(Math.abs(dx), Math.abs(dy)) > 30) {
-                        if (Math.abs(dx) > Math.abs(dy)) {
-                            if (dx > 0) this.move(1); else this.move(3);
-                        } else {
-                            if (dy > 0) this.move(2); else this.move(0);
+                    this.boardContainer.addEventListener('touchend', (e) => {
+                        if (!touchStartX || !touchStartY) return;
+                        const dx = e.changedTouches[0].clientX - touchStartX;
+                        const dy = e.changedTouches[0].clientY - touchStartY;
+                        if (Math.max(Math.abs(dx), Math.abs(dy)) > 30) {
+                            if (Math.abs(dx) > Math.abs(dy)) {
+                                if (dx > 0) this.move(1); else this.move(3);
+                            } else {
+                                if (dy > 0) this.move(2); else this.move(0);
+                            }
                         }
-                    }
-                    touchStartX = 0; touchStartY = 0;
-                }, { passive: true });
+                        touchStartX = 0; touchStartY = 0;
+                    }, { passive: true });
+                }
 
                 // 導覽列大廳主頁按鈕
-                document.getElementById('nav-home-btn').addEventListener('click', () => this.showPortalView());
+                const navHomeBtn = document.getElementById('nav-home-btn');
+                if (navHomeBtn) navHomeBtn.addEventListener('click', () => this.showPortalView());
 
                 // 大廳卡片點擊事件
-                document.getElementById('portal-create-room-btn').addEventListener('click', () => {
-                    this.showGameView();
-                    document.getElementById('room-modal').classList.remove('opacity-0', 'pointer-events-none');
-                    document.getElementById('room-modal').classList.add('opacity-100');
-                });
+                const portalCreateRoomBtn = document.getElementById('portal-create-room-btn');
+                if (portalCreateRoomBtn) {
+                    portalCreateRoomBtn.addEventListener('click', () => {
+                        this.showGameView();
+                        const roomModal = document.getElementById('room-modal');
+                        if (roomModal) {
+                            roomModal.classList.remove('opacity-0', 'pointer-events-none');
+                            roomModal.classList.add('opacity-100');
+                        }
+                    });
+                }
 
-                document.getElementById('portal-single-btn').addEventListener('click', () => {
-                    this.showGameView();
-                    this.restart();
-                });
+                const portalSingleBtn = document.getElementById('portal-single-btn');
+                if (portalSingleBtn) {
+                    portalSingleBtn.addEventListener('click', () => {
+                        this.showGameView();
+                        this.restart();
+                    });
+                }
 
-                document.getElementById('portal-reset-stat-btn').addEventListener('click', () => {
-                    if (confirm('確定要重置本地最高分紀錄嗎？')) {
-                        localStorage.removeItem('2048_best_score');
-                        localStorage.removeItem('2048_best_tile');
-                        this.bestScore = 0;
-                        this.bestTile = 2;
-                        this.updateAuthUI();
-                        alert('已重置紀錄！');
-                    }
-                });
+                const portalResetStatBtn = document.getElementById('portal-reset-stat-btn');
+                if (portalResetStatBtn) {
+                    portalResetStatBtn.addEventListener('click', () => {
+                        if (confirm('確定要重置本地最高分紀錄嗎？')) {
+                            localStorage.removeItem('2048_best_score');
+                            localStorage.removeItem('2048_best_tile');
+                            this.bestScore = 0;
+                            this.bestTile = 2;
+                            this.updateAuthUI();
+                            alert('已重置紀錄！');
+                        }
+                    });
+                }
 
-                document.getElementById('spectate-prev-btn').addEventListener('click', () => this.spectatePrevPlayer());
-                document.getElementById('spectate-next-btn').addEventListener('click', () => this.spectateNextPlayer());
+                const prevBtn = document.getElementById('spectate-prev-btn');
+                if (prevBtn) prevBtn.addEventListener('click', () => this.spectatePrevPlayer());
+                
+                const nextBtn = document.getElementById('spectate-next-btn');
+                if (nextBtn) nextBtn.addEventListener('click', () => this.spectateNextPlayer());
 
-                document.getElementById('restart-btn').addEventListener('click', () => this.restart());
-                document.getElementById('overlay-restart-btn').addEventListener('click', () => this.restart());
-                document.getElementById('undo-btn').addEventListener('click', () => this.undo());
-                document.getElementById('grid-size-select').addEventListener('change', () => this.restart());
-                document.getElementById('sound-btn').addEventListener('click', () => {
-                    this.sound.enabled = !this.sound.enabled;
-                    document.getElementById('sound-icon').className = this.sound.enabled ? 'fas fa-volume-up' : 'fas fa-volume-mute text-gray-400';
-                });
-                document.getElementById('keep-going-btn').addEventListener('click', () => { this.keepPlaying = true; this.hideOverlay(); });
-                document.getElementById('btn-up').addEventListener('click', () => this.move(0));
-                document.getElementById('btn-right').addEventListener('click', () => this.move(1));
-                document.getElementById('btn-down').addEventListener('click', () => this.move(2));
-                document.getElementById('btn-left').addEventListener('click', () => this.move(3));
+                const restartBtn = document.getElementById('restart-btn');
+                if (restartBtn) restartBtn.addEventListener('click', () => this.restart());
+
+                const overlayRestartBtn = document.getElementById('overlay-restart-btn');
+                if (overlayRestartBtn) overlayRestartBtn.addEventListener('click', () => this.restart());
+
+                if (this.undoBtn) this.undoBtn.addEventListener('click', () => this.undo());
+
+                const sizeSelect = document.getElementById('grid-size-select');
+                if (sizeSelect) sizeSelect.addEventListener('change', () => this.restart());
+
+                const soundBtn = document.getElementById('sound-btn');
+                if (soundBtn) {
+                    soundBtn.addEventListener('click', () => {
+                        this.sound.enabled = !this.sound.enabled;
+                        const soundIcon = document.getElementById('sound-icon');
+                        if (soundIcon) soundIcon.className = this.sound.enabled ? 'fas fa-volume-up' : 'fas fa-volume-mute text-gray-400';
+                    });
+                }
+
+                const keepBtn = document.getElementById('keep-going-btn');
+                if (keepBtn) keepBtn.addEventListener('click', () => { this.keepPlaying = true; this.hideOverlay(); });
+
+                const btnUp = document.getElementById('btn-up'); if (btnUp) btnUp.addEventListener('click', () => this.move(0));
+                const btnRight = document.getElementById('btn-right'); if (btnRight) btnRight.addEventListener('click', () => this.move(1));
+                const btnDown = document.getElementById('btn-down'); if (btnDown) btnDown.addEventListener('click', () => this.move(2));
+                const btnLeft = document.getElementById('btn-left'); if (btnLeft) btnLeft.addEventListener('click', () => this.move(3));
 
                 // 聊天輸入發送事件
-                document.getElementById('send-chat-btn').addEventListener('click', () => this.sendChatMessage());
-                document.getElementById('chat-input').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        this.sendChatMessage();
-                    }
-                });
+                const sendChatBtn = document.getElementById('send-chat-btn');
+                if (sendChatBtn) sendChatBtn.addEventListener('click', () => this.sendChatMessage());
 
-                document.getElementById('random-name-btn').addEventListener('click', () => {
-                    const newName = this.generateSmartName();
-                    document.getElementById('nickname-input').value = newName;
-                });
-
-                document.getElementById('quick-taunt-select').addEventListener('change', (e) => {
-                    const text = e.target.value;
-                    if (text) { this.sendTaunt(text); e.target.selectedIndex = 0; }
-                });
-
-                document.getElementById('copy-room-btn').addEventListener('click', () => {
-                    if (!this.roomId) return;
-                    const shareUrl = `${window.location.origin}${window.location.pathname}?room=${this.roomId}`;
-                    navigator.clipboard.writeText(shareUrl).then(() => {
-                        alert(`已複製邀請連結到剪貼簿！\n${shareUrl}\n直接傳給朋友點擊即可進入房間！`);
+                const chatInput = document.getElementById('chat-input');
+                if (chatInput) {
+                    chatInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.sendChatMessage();
+                        }
                     });
-                });
+                }
+
+                const randomNameBtn = document.getElementById('random-name-btn');
+                if (randomNameBtn) {
+                    randomNameBtn.addEventListener('click', () => {
+                        const newName = this.generateSmartName();
+                        if (document.getElementById('nickname-input')) document.getElementById('nickname-input').value = newName;
+                    });
+                }
+
+                const tauntSelect = document.getElementById('quick-taunt-select');
+                if (tauntSelect) {
+                    tauntSelect.addEventListener('change', (e) => {
+                        const text = e.target.value;
+                        if (text) { this.sendTaunt(text); e.target.selectedIndex = 0; }
+                    });
+                }
+
+                const copyRoomBtn = document.getElementById('copy-room-btn');
+                if (copyRoomBtn) {
+                    copyRoomBtn.addEventListener('click', () => {
+                        if (!this.roomId) return;
+                        const shareUrl = `${window.location.origin}${window.location.pathname}?room=${this.roomId}`;
+                        navigator.clipboard.writeText(shareUrl).then(() => {
+                            alert(`已複製邀請連結到剪貼簿！\n${shareUrl}\n直接傳給朋友點擊即可進入房間！`);
+                        });
+                    });
+                }
             }
 
             setupModals() {
                 const roomModal = document.getElementById('room-modal');
-                document.getElementById('open-room-modal-btn').addEventListener('click', () => {
-                    roomModal.classList.remove('opacity-0', 'pointer-events-none');
-                    roomModal.classList.add('opacity-100');
-                });
-                
-                document.getElementById('close-room-modal-btn').addEventListener('click', () => this.closeRoomModal());
-                roomModal.addEventListener('click', (e) => {
-                    if (e.target === roomModal) this.closeRoomModal();
-                });
+                const openBtn = document.getElementById('open-room-modal-btn');
+                const closeBtn = document.getElementById('close-room-modal-btn');
+                const createBtn = document.getElementById('action-create-room-btn');
+                const joinBtn = document.getElementById('action-join-room-btn');
+                const submitJoinBtn = document.getElementById('submit-join-room-btn');
 
-                document.getElementById('action-create-room-btn').addEventListener('click', () => {
-                    this.showGameView();
-                    this.createRoom();
-                });
-                document.getElementById('action-join-room-btn').addEventListener('click', () => {
-                    document.getElementById('join-code-container').classList.remove('hidden');
-                });
-                document.getElementById('submit-join-room-btn').addEventListener('click', () => {
-                    const code = document.getElementById('room-code-input').value.trim().toUpperCase();
-                    if (!code) { alert('請輸入房間號！'); return; }
-                    this.showGameView();
-                    this.autoConnectRoom(code);
-                });
+                if (openBtn && roomModal) {
+                    openBtn.addEventListener('click', () => {
+                        roomModal.classList.remove('opacity-0', 'pointer-events-none');
+                        roomModal.classList.add('opacity-100');
+                    });
+                }
+                
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => this.closeRoomModal());
+                }
+
+                if (roomModal) {
+                    roomModal.addEventListener('click', (e) => {
+                        if (e.target === roomModal) this.closeRoomModal();
+                    });
+                }
+
+                if (createBtn) {
+                    createBtn.addEventListener('click', () => {
+                        this.showGameView();
+                        this.createRoom();
+                    });
+                }
+
+                if (joinBtn) {
+                    joinBtn.addEventListener('click', () => {
+                        const joinContainer = document.getElementById('join-code-container');
+                        if (joinContainer) joinContainer.classList.remove('hidden');
+                    });
+                }
+
+                if (submitJoinBtn) {
+                    submitJoinBtn.addEventListener('click', () => {
+                        const codeInput = document.getElementById('room-code-input');
+                        const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
+                        if (!code) { alert('請輸入房間號！'); return; }
+                        this.showGameView();
+                        this.autoConnectRoom(code);
+                    });
+                }
             }
         }
 
